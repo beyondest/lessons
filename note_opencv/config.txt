@@ -1,0 +1,10 @@
+"python.analysis.extraPaths": [
+        "D:\\anaconda\\Lib\\site-packages"
+    ],
+"python.autoComplete.extraPaths": [
+    "D:\\anaconda\\Scripts",
+    "D:\\anaconda\\Lib\\site-packages"
+
+       
+    ]
+需要系统变量设置anaconda在local python之前,系统才会用anaconda的python

@@ -7,7 +7,7 @@ import time
 path='D:/pycv/lessons/dataset/train.txt'
 
 
-
+a=0
             
                 
 
