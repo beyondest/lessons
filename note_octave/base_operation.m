@@ -123,3 +123,5 @@ imagesc(A)          %show A in colors in image
 imagesc(A);colorbar;colormap gray;%show A in gray_image
 hist(matrix,nums of squares)            %show histogram picture of matrix
 
+setenv('http_proxy','http://127.0.0.1:7890')
+setenv('https_proxy','http://127.0.0.1:7890')

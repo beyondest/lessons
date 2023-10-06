@@ -1,0 +1,6 @@
+"ctrl+u":maximize terminal
+"ctrl+alt+n":run code
+"ctrl+alt+m":stope run code
+"ctrl+alt+l":run code in interactive mode
+"ctrl++":code size up
+"ctrl+alt+enter":run single unit in ipynb

@@ -1,0 +1,7 @@
+wsl -u <Username> -d <DistributionName>
+wsl --shutdown
+wsl --list --all
+wsl --list --running
+
+systeminfo
+dir . test.txt
