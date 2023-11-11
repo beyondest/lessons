@@ -52,6 +52,12 @@ git reset --soft hash
 git push remote_name master:master
 git pull --rebase remote_name master:master
 git pull remote_name master:master
+git branch -a   show all branch
+git branch -r   show remote branch
+git branch new_branch_name
+git branch -d deleted_branch
+git branch -m old_name new_name
+
 
 
 tar -czvf file.tar.gz file1 file2
