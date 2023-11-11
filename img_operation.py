@@ -8,104 +8,277 @@ from time import sleep,ctime
 import random
 import matplotlib.pyplot as plt
 import math
+import sys
 
-def pre_process(img_ori)->list:
-    '''return img_single,time'''
+#yuv_range:
+#red:152-255,v
+#blue:145-255,u
+
+
+
+def target_find(img_ori:np.ndarray,armor_color:str,filter_params:list)->tuple:
+    '''
+    Function:\n
+    NO1:find light_bar\n
+    NO2:make big rec to cover two light_bar\n
+    NO3:use big rec to make a mask to select roi\n
+    notice that there may be a lot of roi,so return list\n
+    NO4:calculate time and show FPS\n
+    return draw_img,roi_single_list,all_time
+    
+    '''
+    img_single,t1=pre_process(img_ori,armor_color)
+    big_rec_list,t2=find_big_rec_plus(img_single,filter_params)
+    draw_img=draw_big_rec(big_rec_list,img_ori)
+    roi_list,t3=pick_up_roi(big_rec_list,img_ori)
+    roi_single_list,t4=pre_process2(roi_list,armor_color)
+    all_time=t1+t2+t3+t4
+    return draw_img,roi_single_list,all_time
+###############################################################
+def pre_process(img_ori:np.ndarray,armor_color:str)->list:
+    '''
+    armor_color = 'red' or 'blue'\n
+    return img_single,time
+    '''
+    img_size_yx=(img_ori.shape[0],img_ori.shape[1])
+    
     time1=cv2.getTickCount()
     
     dst=cv2.GaussianBlur(img_ori,(3,3),1)
     dst=cv2.cvtColor(dst,cv2.COLOR_BGR2YUV)
+    #out of memory error
     y,u,v=cv2.split(dst)
-    dst=cv2.inRange(u.reshape(1024,1280,1),90,128)
-    dst=cv2.medianBlur(dst,13)
-    kernel=cv2.getStructuringElement(cv2.MORPH_RECT,(10,10))
+    #blue 145-255
+    #red 152-255
+    if armor_color=='blue':
+        dst=cv2.inRange(u.reshape(img_size_yx[0],img_size_yx[1],1),145,255)
+    elif armor_color=='red':
+        dst=cv2.inRange(v.reshape(img_size_yx[0],img_size_yx[1],1),152,255)
+    else:
+        print('armor_color is wrong')
+        sys.exit()
+    #dst=cv2.medianBlur(dst,13)
+    if img_size_yx==(1024,1280):
+        kernel=cv2.getStructuringElement(cv2.MORPH_RECT,(10,10))
+    elif img_size_yx==(256,320):
+        kernel=cv2.getStructuringElement(cv2.MORPH_RECT,(2,2))
+    else:
+        print('imgsize not match, you havent preset preprocess params yet')  
+        sys.exit() 
     dst=cv2.morphologyEx(dst,cv2.MORPH_CLOSE,kernel)
     
     time2=cv2.getTickCount()
     time=(time2-time1)/cv2.getTickFrequency()
     
+    
+    
+    
+    
     return dst,time
 
-def find_big_rec(img_single)->list:
+
+def find_big_rec_plus(img_single:np.ndarray,
+                      filter_params:tuple
+                      )->tuple:
     '''
-    big_rec is expanded already\n
-    return big_rec_list,time
+    add trackbar_set\n
+    filter_params:
+    @params[0]: area_range
+    @params[1]: normal_ratio
+    @params[2]: strange_ratio1
+    @params[3]: strange_ratio2
+    @params[4]: shape_like_range
+    @params[5]: center_dis_range
     '''
+    img_size_yx=(img_single.shape[0],img_single.shape[1])
     out_list=[]
+    final_list=[]
+    
+    
+    
     time1=cv2.getTickCount()
-    color_mode=1
     conts,arrs=cv2.findContours(img_single,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
-    conts,arrs=filter_area(conts,arrs,(300,500))
-    print(len(conts))
-    conts,arrs=filter_normal(conts,arrs,ratio=1.5)
-    print(len(conts))
-    conts,arrs=filter_strange(conts,arrs,ratio=5)
-    print(len(conts))
-    conts_tuple_list=filter_no_shapelike(conts,(0.5,1.5),(0.5,1.5))
-    print(len(conts_tuple_list))
+    
+            
+    conts=filter_area(conts,filter_params[0])
+    #print(len(conts))
+    conts=filter_normal(conts,ratio=filter_params[1])
+    #print(len(conts))
+    conts=filter_strange(conts,ratio=filter_params[2])
+    #print(len(conts))
+
+    conts_tuple_list=filter_no_shapelike(conts,filter_params[4],filter_params[4])
+    #print(len(conts_tuple_list))
     for i in conts_tuple_list:
         
-        if iscenternear(i[0],i[1],200):
-           
+        if is_center_dis_good(i[0],i[1],filter_params[5]):
+        
             big_rec_info=make_big_rec(i[0],i[1])
-            out_list.append(big_rec_info[4])
-    out_list=expand_rec_wid(out_list,expand_rate=2)   
+            #wid and hei cant < 1
+            if big_rec_info[2]>1 and big_rec_info[3]>1:
+                
+                out_list.append(big_rec_info[4])
+        
+        
+        
+    out_list=filter_strange(out_list,filter_params[3])
+    out_list=expand_rec_wid(out_list,expand_rate=2,img_size_yx=img_size_yx) 
+    
+   
+        
         
     time2=cv2.getTickCount()
     time=(time2-time1)/cv2.getTickFrequency()
     return out_list ,time 
 
-def draw_big_rec(big_rec_list,img_bgr):
+def find_big_rec(img_single:np.ndarray)->list:
+    '''
+    big_rec is expanded already\n
+    return big_rec_list,time
+    '''
+    
+    img_size_yx=(img_single.shape[0],img_single.shape[1])
+    out_list=[]
+    if img_size_yx==(1024,1280):
+        mode='big'
+    elif img_size_yx==(256,320):
+        mode='small'
+    else:
+        print('img_size not match, you havent preset params of find_big_rec yet')
+        sys.exit()
+    
+    
+    
+    time1=cv2.getTickCount()
+    conts,arrs=cv2.findContours(img_single,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+    if mode=='big':
+        
+        if len(conts)!=-1:
+            
+            conts,arrs=filter_area(conts,arrs,(500,2500))
+            #print(len(conts))
+            conts,arrs=filter_normal(conts,arrs,ratio=2)
+            #print(len(conts))
+            conts,arrs=filter_strange(conts,arrs,ratio=5)
+            #print(len(conts))
+        
+            conts_tuple_list=filter_no_shapelike(conts,(0.4,1.6),(0.4,1.6))
+            #print(len(conts_tuple_list))
+            for i in conts_tuple_list:
+                
+                if iscenternear(i[0],i[1],600):
+                
+                    big_rec_info=make_big_rec(i[0],i[1])
+                    #wid and hei cant < 1
+                    if big_rec_info[2]>1 and big_rec_info[3]>1:
+                        
+                        out_list.append(big_rec_info[4])
+        
+        else:
+            big_rec_info=make_big_rec(conts[0],conts[1])
+            out_list.append(big_rec_info[4])
+        
+    
+        out_list=expand_rec_wid(out_list,expand_rate=2,img_size_yx=img_size_yx) 
+    
+    elif mode=='small':
+        #small_params = 1/4 * big_params
+        if len(conts)!=-1:
+            
+            conts,arrs=filter_area(conts,arrs,(1,400))
+            #print(len(conts))
+            conts,arrs=filter_normal(conts,arrs,ratio=1.2)
+            #print(len(conts))
+            conts,arrs=filter_strange(conts,arrs,ratio=10)
+            #print(len(conts))
+        
+            conts_tuple_list=filter_no_shapelike(conts,(0.5,1.5),(0.5,1.5))
+            #print(len(conts_tuple_list))
+            for i in conts_tuple_list:
+                
+                if iscenternear(i[0],i[1],80):
+                    
+                    big_rec_info=make_big_rec(i[0],i[1])
+                    
+                    #wid and hei cant <1
+                    if big_rec_info[2]>1 and big_rec_info[3]>1:
+                    
+                        out_list.append(big_rec_info[4])
+        
+        else:
+            big_rec_info=make_big_rec(conts[0],conts[1])
+            out_list.append(big_rec_info[4])
+        
+    
+        out_list=expand_rec_wid(out_list,expand_rate=2,img_size_yx=img_size_yx)  
+        
+        
+        
+    time2=cv2.getTickCount()
+    time=(time2-time1)/cv2.getTickFrequency()
+    return out_list ,time 
+
+def draw_big_rec(big_rec_list,img_bgr:np.ndarray)->np.ndarray:
     '''
     return img_copy_bgr
     '''
+    if img_bgr.shape[2]==1:
+        img_bgr=cv2.cvtColor(img_bgr,cv2.COLOR_GRAY2BGR)
     img_copy=img_bgr.copy()
     for i in big_rec_list:
         draw_cont(img_copy,i,2,3)
     return img_copy
     
-def pick_up_roi(big_rec_list,img_ori)->list:
+def pick_up_roi(big_rec_list,img_ori:np.ndarray)->list:
     '''
     return roi_list,time
     '''
+    img_size_yx=(img_ori.shape[0],img_ori.shape[1])
     t1=cv2.getTickCount()
     roi_list=[]
     
-    background=np.zeros((1024,1280),dtype=np.uint8)
+    background=np.zeros((img_size_yx[0],img_size_yx[1]),dtype=np.uint8)
     for i in big_rec_list:
         i=i.reshape(-1,1,2)
         back_copy=background.copy()
         img_copy=img_ori.copy()
         dst=img_copy
         mask=cv2.fillPoly(back_copy,[i],255)
-        print(mask.dtype)
-        print(mask.shape)
-        print(img_copy.dtype)
-        print(img_copy.shape)
-    
         dst=cv2.bitwise_and(img_copy,img_copy,mask=mask)
         roi_list.append(dst)
+    if len(big_rec_list)==0:
+        bgr=cv2.cvtColor(background,cv2.COLOR_GRAY2BGR)
+        roi_list.append(bgr)
     t2=cv2.getTickCount()
     time= (t2-t1)/cv2.getTickFrequency()
     return roi_list,time
 
 
-def pre_process2(roi_list)->list:
+def pre_process2(roi_list,armor_color:str)->list:
     '''
     preprocess for finding number\n
     return roi_single_list,time
     '''
     out=[]
+    
     t1=cv2.getTickCount()
     for i in roi_list:
+        img_size_yx=(i.shape[0],i.shape[1])
         dst=cv2.cvtColor(i,cv2.COLOR_BGR2GRAY)
-        ret,dst=cv2.threshold(dst,130,255,cv2.THRESH_BINARY)
+        #y,u,v=cv2.split(dst)
+        #127 for red
+        #90 for blue 
+        #dst=cv2.inRange(y.reshape(img_size_yx[0],img_size_yx[1],1),77,158)
+        if armor_color=='red':
+            ret,dst=cv2.threshold(dst,127,255,cv2.THRESH_BINARY)
+        elif armor_color=='blue':    
+            ret,dst=cv2.threshold(dst,90,255,cv2.THRESH_BINARY)
         out.append(dst)
     t2=cv2.getTickCount()
     time=(t2-t1)/cv2.getTickFrequency()
     return out,time
     
-
+#####################################################################
 def plt_show0(img):
     '''
     show 3 channels bgr in plt
@@ -122,8 +295,33 @@ def plt_show(img):
     plt.imshow(img,cmap='gray')
     plt.show()
 
-
-
+def add_text(img_bgr:np.ndarray,
+             name:str,
+             value,
+             pos:tuple=(-1,-1),
+             font:int=cv2.FONT_HERSHEY_COMPLEX,
+             color:tuple=(100,200,200),
+             )->np.ndarray:
+    '''
+    show name:value on the position of pos(x,y)\n
+    if pos =(-1,-1), then auto position\n
+    return img_bgr
+    '''
+    img_size_yx=(img_bgr.shape[0],img_bgr.shape[1])
+    if pos==(-1,-1):
+        
+        pos=(round(img_size_yx[1]/10),round(img_size_yx[0]/10))
+    if img_size_yx==(1024,1280):
+        scale_size=2
+    elif img_size_yx==(256,320):
+        scale_size=0.5
+    else:
+        print('img_size not match, you havent preset for add_text yet')  
+    thickness=round(3/(1024*1280)*(img_size_yx[0]*img_size_yx[1]))
+    dst=cv2.putText(img_bgr,f'{name}:{value}',pos,font,scale_size,color,thickness)
+    return dst
+    
+###################################################################
 def gray_guss(image):
     image = cv2.GaussianBlur(image, (3, 3), 0)
     gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -157,7 +355,7 @@ def get_edgebin1(ori_img:np.ndarray)->np.ndarray:
 
     img_edge_bin=cv2.medianBlur(img_close,5)
     return img_edge_bin
-
+################################################################3
 def make_edge(abs_path:str,out_path:str,fmt:str='png'):
     ori_img=cv2.imread(abs_path)
     edge_bin=get_edgebin1(ori_img)
@@ -296,6 +494,7 @@ def make_findcont_transform(abs_path:str,out_path:str,fmt:str='png',thr_area:int
     p_list = []  
     dst_point = (1000, 1000)  
     img=cv2.imread(abs_path)
+    img_size_yx=(img.shape[0],img.shape[1])
     img2=img.copy()
     ori_name=oso.get_name(abs_path)
     edge_bin=get_edgebin1(img)
@@ -306,8 +505,8 @@ def make_findcont_transform(abs_path:str,out_path:str,fmt:str='png',thr_area:int
         if area>thr_area:
             rec_points.append(getrec_info(i)[4])
     if len(rec_points)==0:
-        wid=1280
-        hei=1024
+        wid=img_size_yx[1]
+        hei=img_size_yx[0]
         x1=random.randint(0,wid//3)
         y1=random.randint(0,hei//3)
         x2=random.randint(wid-wid//3,wid-1)
@@ -418,7 +617,7 @@ def make_cut(abs_path:str,out_path:str,fmt:str='png',suffix_name:str='cut'):
     out=os.path.join(out_path,ori_name+suffix_name+'.'+fmt)
     cv2.imwrite(out,dst)
 
-
+##################################################################
 
 def getrec_info(cont:np.ndarray)->tuple:
     '''
@@ -447,10 +646,11 @@ def getimg_info(abs_path:str)->tuple:
     return img_size,img_shape,img_dtype
 
 def pertrans(img:np.ndarray)->np.ndarray:
-    '''size is both 1280*1024'''
-    pts1=([0,0],[1280,0],[0,1024],[1280,1024])
+    '''watch the size'''
+    img_size_yx=(img.shape[0],img.shape[1])
+    pts1=([0,0],[img_size_yx[1],0],[0,img_size_yx[0]],[img_size_yx[1],img_size_yx[0]])
     pts1=np.float32(pts1)
-    dst_point=[1280,1024]
+    dst_point=[img_size_yx[1],img_size_yx[0]]
     pts2 = np.float32([[0, 0], [dst_point[0], 0], [0, dst_point[1]], [dst_point[0], dst_point[1]]])
     dst = cv2.warpPerspective(img, cv2.getPerspectiveTransform(pts1, pts2), dst_point)
     return dst
@@ -471,14 +671,13 @@ def gray_stretch(image):
         for j in range(image.shape[1]):
             image[i,j]=(255/(max_value-min_value)*image[i,j]-(255*min_value)/(max_value-min_value))
     return image
-
-def filter_area(conts_list:list,arrs_list,area_range:tuple=(100,500))->tuple:
+################################################################################3
+def filter_area(conts_list:list,area_range:tuple=(100,500))->list:
     '''
     filter rec_area that is not in range,\n
     return conts_list, arrs_list
     '''
     conts_out=[]
-    arrs_out=[[]]
     
     for i in range(len(conts_list)):
         rec_cont=cv2.minAreaRect(conts_list[i])
@@ -490,9 +689,8 @@ def filter_area(conts_list:list,arrs_list,area_range:tuple=(100,500))->tuple:
         if area_range[0]<rec_area<area_range[1]:
             
             conts_out.append(conts_list[i])
-            arrs_out[0].append(arrs_list[0][i])
         
-    return conts_out,arrs_out
+    return conts_out
 
 def filter_nohavechild(conts_list:list,arrs_list:list)->tuple:
     '''filter conts which does not have a child_cont,leave the outest cont,notice that these outest do have child'''
@@ -532,12 +730,11 @@ def find_current_num(cur_list:list,conts:np.ndarray)->int:
        
    
     
-def filter_strange(conts_list:list,arrs_list:list,ratio:float=5)->tuple:
+def filter_strange(conts_list:list,ratio:float=5)->tuple:
     '''
     filter the shape looks so strange that their rec is too thin
     '''
     conts_out=[]
-    arrs_out=[[]]
 
     for i in range(len(conts_list)):
         info_tuple=getrec_info(conts_list[i])
@@ -554,15 +751,13 @@ def filter_strange(conts_list:list,arrs_list:list,ratio:float=5)->tuple:
                 continue
         
         conts_out.append(conts_list[i])
-        arrs_out[0].append(arrs_list[0][i])
-    return conts_out,arrs_out
+    return conts_out
 
-def filter_normal(conts_list,arrs_list,ratio:float=1.5)->tuple:
+def filter_normal(conts_list,ratio:float=1.5)->tuple:
     '''
     filter the shape looks too normal that their rec is nearly square 
     '''
     conts_out=[]
-    arrs_out=[[]]
 
     for i in range(len(conts_list)):
         x,y,wid,hei,_,_=getrec_info(conts_list[i])
@@ -575,8 +770,8 @@ def filter_normal(conts_list,arrs_list,ratio:float=1.5)->tuple:
                 continue
         
         conts_out.append(conts_list[i])
-        arrs_out[0].append(arrs_list[0][i])
-    return conts_out,arrs_out
+
+    return conts_out
 
 def filter_no_shapelike(conts_list,area_near_range:tuple=(0.5,1.5),ratio_near_range:tuple=(0.5,1.5))->list:
     '''
@@ -786,6 +981,10 @@ def isrelative(cont1:np.ndarray,
 def iscenternear(cont1:np.ndarray,
                  cont2:np.ndarray,
                  distance:int=50)->bool:
+    '''
+    <distance return true\n
+    else return false
+    '''
     x1,y1,_,_,_,_=getrec_info(cont1)
     x2,y2,_,_,_,_=getrec_info(cont2)
     dis=((x1-x2)**2+(y1-y2)**2)**0.5
@@ -794,7 +993,21 @@ def iscenternear(cont1:np.ndarray,
     else:
         return False
 
-
+def is_center_dis_good(cont1:np.ndarray,
+                       cont2:np.ndarray,
+                       center_dis_range:tuple):
+    '''
+    return True if center_dis is in range
+    '''
+    x1,y1,_,_,_,_=getrec_info(cont1)
+    x2,y2,_,_,_,_=getrec_info(cont2)
+    dis=((x1-x2)**2+(y1-y2)**2)**0.5
+    if center_dis_range[0]<dis<center_dis_range[1]:
+        return True
+    else:
+        return False
+    
+    
 
 def walk_until_white(begin_x:int,
                      begin_y:int,
@@ -882,20 +1095,21 @@ def walk_until_dis(begin_x:int,
                    slope:float,
                    distance:float,
                    direction:str='right',
-                   x_range:tuple=(0,1280),
-                   y_range:tuple=(0,1024)
+                   img_size_yx:tuple=(1024,1280)
+                   
                     )->list:
     '''direction =right for x+=1, or left for x-=1,
     return x,y'''      
     x=begin_x
     y=begin_y
-    try:
-        m=1/slope
-    except:
-        print('slope is 0')
-        return [begin_x,begin_y]
+    x_range=(0,img_size_yx[1])
+    y_range=(0,img_size_yx[0])
+    if math.isinf(slope) or math.isnan(slope):
+        print('slope out')
+        return [x,y]
     theta=math.atan(abs(slope))
     delta_x=distance*math.cos(theta)
+    
     delta_y=distance*math.sin(theta)
     if direction=='right':
         
@@ -1046,7 +1260,7 @@ def make_big_rec(cont1:np.ndarray,
     big_cont=np.vstack((cont1,cont2))
     return getrec_info(big_cont)
 
-def expand_rec_wid(rec_cont_list,expand_rate:float=1.5)->list:
+def expand_rec_wid(rec_cont_list,expand_rate:float=1.5,img_size_yx:tuple=(1024,1280))->list:
     '''
     only expand short side
     return a list of expanded rec_conts
@@ -1070,31 +1284,47 @@ def expand_rec_wid(rec_cont_list,expand_rate:float=1.5)->list:
             dis=hei*(expand_rate-1)/2
             #all is expanding in slope 12, the short side slope
             slope12=(y1-y2)/(x1-x2)
-            #1 and 4 is same, 1 and 2 is opposite
-            
-            direc1='left' if slope12>0 else 'right'
-            direc2='right' if slope12>0 else 'left'
-            #make 1 is left down point
-            out_points[1]=walk_until_dis(x1,y1,slope12,dis,direc1)
-            out_points[2]=walk_until_dis(x2,y2,slope12,dis,direc2)
-            out_points[3]=walk_until_dis(x3,y3,slope12,dis,direc2)
-            out_points[0]=walk_until_dis(x4,y4,slope12,dis,direc1)
+            #check if vertical
+            if slope12==0 or math.isinf(slope12) or math.isnan(slope12):
+                out_points[1]=[x1,y1-dis]
+                out_points[2]=[x2,y2+dis]
+                out_points[3]=[x3,y3+dis]
+                out_points[0]=[x4,y4-dis]
+                
+            else:
+                #1 and 4 is same, 1 and 2 is opposite
+                
+                        
+                direc1='left' if slope12>0 else 'right'
+                direc2='right' if slope12>0 else 'left'
+                #make 1 is left down point
+                out_points[1]=walk_until_dis(x1,y1,slope12,dis,direc1,img_size_yx=img_size_yx)
+                out_points[2]=walk_until_dis(x2,y2,slope12,dis,direc2,img_size_yx=img_size_yx)
+                out_points[3]=walk_until_dis(x3,y3,slope12,dis,direc2,img_size_yx=img_size_yx)
+                out_points[0]=walk_until_dis(x4,y4,slope12,dis,direc1,img_size_yx=img_size_yx)
             out_list.append(np.array(out_points,dtype=np.int64))
         else:
             #always make side12 is short one
  
             dis=hei*(expand_rate-1)/2
             #all is expanding in slope 12, the short side slope
-            slope12=(y1-y2)/(x1-x2)
-            #1 and 4 is same, 1 and 2 is opposite
             
-            direc1='right' if slope12>0 else 'left'
-            direc2='left' if slope12>0 else 'right'
-            #make 1 is left down point
-            out_points[0]=walk_until_dis(x1,y1,slope12,dis,direc1)
-            out_points[1]=walk_until_dis(x2,y2,slope12,dis,direc2)
-            out_points[2]=walk_until_dis(x3,y3,slope12,dis,direc2)
-            out_points[3]=walk_until_dis(x4,y4,slope12,dis,direc1)
+            slope12=(y1-y2)/(x1-x2)
+            #check if vertical
+            if slope12==0 or math.isnan(slope12) or math.isinf(slope12):
+                out_points[0]=[x1,y1+dis]
+                out_points[1]=[x2,y2-dis]
+                out_points[2]=[x3,y3-dis]
+                out_points[3]=[x4,y4+dis]
+            else:
+                #1 and 4 is same, 1 and 2 is opposite
+                direc1='right' if slope12>0 else 'left'
+                direc2='left' if slope12>0 else 'right'
+                #make 1 is left down point
+                out_points[0]=walk_until_dis(x1,y1,slope12,dis,direc1,img_size_yx=img_size_yx)
+                out_points[1]=walk_until_dis(x2,y2,slope12,dis,direc2,img_size_yx=img_size_yx)
+                out_points[2]=walk_until_dis(x3,y3,slope12,dis,direc2,img_size_yx=img_size_yx)
+                out_points[3]=walk_until_dis(x4,y4,slope12,dis,direc1,img_size_yx=img_size_yx)
             out_list.append(np.array(out_points,dtype=np.int64))
     return out_list     
         

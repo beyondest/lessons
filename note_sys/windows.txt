@@ -2,6 +2,17 @@ wsl -u <Username> -d <DistributionName>
 wsl --shutdown
 wsl --list --all
 wsl --list --running
+wsl -l -v
+wsl.exe --system -d Ubuntu-18.04 df -h /mnt/wslg/distro  //查看ubuntu的虚拟磁盘内存情况
+wsl df -h /     //同上
+wsl.exe --version
 
-systeminfo
+systeminfo          //查看设备所有信息，包括系统内存不包括磁盘情况
+fsutil volume diskfree C:   //查看磁盘情况
+
 dir . test.txt
+ssh rcclub@192.168.1.123    //509rcclub巨骚服务器
+
+
+usbipd wsl list
+usbipd wsl attach --busid

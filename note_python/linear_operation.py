@@ -88,7 +88,7 @@ D=np.r_[A,B]    #best row combine
 
 row_A=A.reshape(1,-1)
 col_A=A.reshape(-1,1)
-
+R=np.repeat(col_A,"repeat_times",1)
 
 #complicate calculate
 A@B                 
@@ -151,3 +151,5 @@ plt.show()
 '''show histogram'''
 plt.hist(row_vector,'square_nums')
 
+'''convolution'''
+np.convolve([1,2,3],[1,2,3])

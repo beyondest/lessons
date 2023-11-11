@@ -45,10 +45,10 @@ while open:
 		break
 	if ret==True:
 		gray_vd=cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)'''this is not nesessary'''
-		cv2.imshow('fuck',gray_vd)
+		cv2.imshow('win1',gray_vd)
 		if cv2.waitKey(anti_speed) & 0xff==27:		
 '''anti_speed means more big more slow video'''
-		 brea/k
+		 #break
 '''cv2.release(),it will go wrong'''
 cv2.destroyAllWindows()
 

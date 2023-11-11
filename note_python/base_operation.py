@@ -1,6 +1,7 @@
 
                     #Decoration
-
+a=1
+b=0
 
 def operation_before_target_func():
     pass                    
@@ -60,5 +61,86 @@ change(b)==[2,1]
 '''a:   add to last line write'''
 '''bin mode'''
 
-        
-        
+                        #class
+class func:
+    def __init__(self,a1,a2) :
+        self.a1=a1
+        self.a2=a2
+    def myprint(self):
+        print(self.a1)
+        print(self.a2)
+class myiteration:
+    def __init__(self,start,end) :
+        self.start=start
+        self.end=end
+    
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.start>=self.end:
+            raise StopIteration
+        else:
+            current_value=self.start
+            self.start+=1
+            return current_value
+class Book:
+    def __init__(self, title, author):
+        self.title = title
+        self.__author = author
+    
+    def __str__(self):
+        return f"{self.title} by {self.author}"
+
+    def __repr__(self):
+        return f"Book('{self.title}', '{self.author}')"
+
+book = Book("Python Basics", "John Doe")
+print(book.__author)        #this will raise error
+print(str(book))  
+print(repr(book)) 
+a=myiteration(1,10)      
+func1=func(3,4)
+func1.myprint()
+
+'''use this to make dictionary easily'''
+class C:
+    pass
+c=C()
+c.x=1
+c.y='sd'
+c.z=[1,2,3]
+
+
+                        #assert
+assert a and b          #same as try a and b except asserterror
+'''if a and b=0 then raise asserterror and stop runcode'''
+
+
+                        #enumerate
+'''get index and value at the same time'''
+a_iterable=['a','b','c','d']
+b_iterable=enumerate(a_iterable)
+for index,value in b_iterable:
+    print(index,value)
+    
+                        #raise
+if a!='str':
+    raise TypeError('a must be str')
+
+
+                        #generator
+'''generator is kind of special iteration, which will record last leave position'''
+def counter():
+    a=[1,2,3,4,5]
+    while 1:
+        for i in range(5):
+            yield a[i]
+            a[i]+=1
+counter2=(i**2 for i in range(10))          
+a=counter()
+for i in range(10):
+    next(a)
+    
+
+            
+            

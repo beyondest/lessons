@@ -1,3 +1,103 @@
 lscpu
 lsgpu
 lshw
+free -h     //查看系统内存而非磁盘情况
+top         //查看实时系统内存情况
+df -h       //查看磁盘情况
+sudo apt-get install ubuntu-desktop
+sudo systemctl start lightdm            //设置默认显示服务
+
+systemctl reset-failed
+设置代理：打开clash的allow lan，下载service mode ，打开 tun mode ， enable firewall（在general里的一个盾牌图标）
+
+du -sh *            //查看当前目录各个文件大小
+du -sh .*
+du -sh     
+du -sh --exclude=mnt -sh *
+du -sh * |sort -rh  //降序查看
+
+sudo logrotate -f /etc/logrotate.d/my_logrotate //自己配置logrotate文件然后执行
+内容如下
+/var/log/*.log {
+    su root root
+    size 10G
+    rotate 4
+    compress
+    missingok
+    notifempty
+    create 0644 root root
+}
+
+python3 --version   //python3.6.9
+python3 -m venv myenv   //make virtual env for python369
+source myenv/bin/activate
+
+
+/home/liyuxuan/proxy/proxy.sh
+~/.bashrc   alias proxy="source /home/liyuxuan/proxy/proxy.sh"
+
+proxy set
+proxy unset
+proxy test
+剪切
+mv /path/to/source_file /path/to/destination_directory/
+递归复制
+cp -r /pathq1/* /path2
+ 
+
+git add .
+git commit -m "my first commit"
+git reflog
+git reset --soft hash
+git push remote_name master:master
+git pull --rebase remote_name master:master
+git pull remote_name master:master
+
+
+tar -czvf file.tar.gz file1 file2
+tar -xzvf file.tar.gz -C /destination_directory
+unrar x target.rar -d /destination_directory
+
+
+eog img.jpg
+eog img.png
+identify img.png
+
+pip3 install --proxy http://172.23.32.1:7890    #pip3需要单独配置代理
+
+
+
+sudo apt-get install -y *** //auto use yes
+sudo apt update
+
+
+dotnet new console    //create c# project in pwd
+dotnet run
+
+while [[ "$PWD" != "/" ]] && [ ! -d "build" ]; do cd ..; done &&[ -d "build" ] && cd "build"    //ways to find build by keep searching
+
+find . -type f -ctime -0.083 //type:f = folder only, ctime:0.083= 2 hours
+
+
+
+ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github" //生成密钥对
+eval $(ssh-agent -s)         //激活ssh代理（在bash里），直接加大bashrc中也可以
+ssh-add ~/.ssh/github   //添加私钥给ssh代理，之后可以在bash里直接git push
+
+
+//not work
+ adb shell am start -a android.media.action.VIDEO_CAPTURE &&adb shell screenrecord --output-format=h264 --size 720x1280 - | nc -l 127.0.0.1 9006
+
+//work but screen
+ adb exec-out screenrecord --output-format=h264 - |    ffplay -framerate 60 -probesize 32 -sync video  -
+
+
+ //run adb_handler.py then run adb_camera.py
+adb forward tcp:8080 tcp:8080   //set as port in android ipwebcam
+"rtsp://127.0.0.1:8080/h264_pcm.sdp"
+
+192.168.1.123
+rcclub509daisuki
+
+lsof -i -n      //show tcp port status
+ss -tuln        //show tcp/udp port status

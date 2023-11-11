@@ -1,0 +1,9 @@
+sudo apt-get install build-essential
+sudo apt-get install cmake
+
+
+python3.11 -m venv env_python311
+
+
+
+tensorboard --logdir=/path/to/logdir(.tfevents) --host=localhost    //然后打开网址
