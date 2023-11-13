@@ -1,23 +1,23 @@
 lscpu
 lsgpu
 lshw
-free -h     //²é¿´ÏµÍ³ÄÚ´æ¶ø·Ç´ÅÅÌÇé¿ö
-top         //²é¿´ÊµÊ±ÏµÍ³ÄÚ´æÇé¿ö
-df -h       //²é¿´´ÅÅÌÇé¿ö
+free -h     //cat system running memory (16g often)
+top         //show more system pid and running memory too
+df -h       //show total disk status
 sudo apt-get install ubuntu-desktop
-sudo systemctl start lightdm            //ÉèÖÃÄ¬ÈÏÏÔÊ¾·şÎñ
+sudo systemctl start lightdm            //set default show service
 
 systemctl reset-failed
-ÉèÖÃ´úÀí£º´ò¿ªclashµÄallow lan£¬ÏÂÔØservice mode £¬´ò¿ª tun mode £¬ enable firewall£¨ÔÚgeneralÀïµÄÒ»¸ö¶ÜÅÆÍ¼±ê£©
+how to set proxy for wsl:open clash allow lanï¼Œdownload service mode ï¼Œopen tun mode ï¼Œ enable firewallï¼ˆa shield icon in General pageï¼‰
 
-du -sh *            //²é¿´µ±Ç°Ä¿Â¼¸÷¸öÎÄ¼ş´óĞ¡
-du -sh .*
-du -sh     
-du -sh --exclude=mnt -sh *
-du -sh * |sort -rh  //½µĞò²é¿´
+du -sh *           //show each folder size in pwd
+du -sh .*          //show total pwd size
+du -sh             //same as up
+du -sh --exclude=mnt -sh *    
+du -sh * |sort -rh  //show in order
 
-sudo logrotate -f /etc/logrotate.d/my_logrotate //×Ô¼ºÅäÖÃlogrotateÎÄ¼şÈ»ºóÖ´ĞĞ
-ÄÚÈİÈçÏÂ
+sudo logrotate -f /etc/logrotate.d/my_logrotate //config custom logrotate
+the content is as below:
 /var/log/*.log {
     su root root
     size 10G
@@ -39,10 +39,10 @@ source myenv/bin/activate
 proxy set
 proxy unset
 proxy test
-¼ôÇĞ
-mv /path/to/source_file /path/to/destination_directory/
-µİ¹é¸´ÖÆ
-cp -r /pathq1/* /path2
+
+mv /path/to/source_file /path/to/destination_directory/         //move file to anoter path
+
+cp -r /pathq1/* /path2            //copy file recursively
  
 
 git add .
@@ -69,7 +69,7 @@ eog img.jpg
 eog img.png
 identify img.png
 
-pip3 install --proxy http://172.23.32.1:7890    #pip3ĞèÒªµ¥¶ÀÅäÖÃ´úÀí
+pip3 install --proxy http://172.23.32.1:7890    //pip3 need to set proxy alone, even use proxy.sh
 
 
 
@@ -86,9 +86,9 @@ find . -type f -ctime -0.083 //type:f = folder only, ctime:0.083= 2 hours
 
 
 
-ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github" //Éú³ÉÃÜÔ¿¶Ô
-eval $(ssh-agent -s)         //¼¤»îssh´úÀí£¨ÔÚbashÀï£©£¬Ö±½Ó¼Ó´óbashrcÖĞÒ²¿ÉÒÔ
-ssh-add ~/.ssh/github   //Ìí¼ÓË½Ô¿¸øssh´úÀí£¬Ö®ºó¿ÉÒÔÔÚbashÀïÖ±½Ógit push
+ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github" //generate a pare of key_ssh
+eval $(ssh-agent -s)         //activate ssh-agent, you can add to bashrc to open autoly
+ssh-add ~/.ssh/github        //add specified private key to ssh-agent, now you can git push to git@github.com:beyondest/repo.git
 
 
 //not work
@@ -98,7 +98,7 @@ ssh-add ~/.ssh/github   //Ìí¼ÓË½Ô¿¸øssh´úÀí£¬Ö®ºó¿ÉÒÔÔÚbashÀïÖ±½Ógit push
  adb exec-out screenrecord --output-format=h264 - |    ffplay -framerate 60 -probesize 32 -sync video  -
 
 
- //run adb_handler.py then run adb_camera.py
+//run adb_handler.py then run adb_camera.py or just do as below
 adb forward tcp:8080 tcp:8080   //set as port in android ipwebcam
 "rtsp://127.0.0.1:8080/h264_pcm.sdp"
 
