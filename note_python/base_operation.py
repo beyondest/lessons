@@ -94,6 +94,16 @@ class Book:
     def __repr__(self):
         return f"Book('{self.title}', '{self.author}')"
 
+class P:
+    def __init__(self) -> None:
+        print('i am p')
+#use parent class to init, avoid init repeatly 
+class C(P):
+    def __init__(self) -> None:
+        super().__init__()
+        print('i am c')    
+
+
 book = Book("Python Basics", "John Doe")
 print(book.__author)        #this will raise error
 print(str(book))  

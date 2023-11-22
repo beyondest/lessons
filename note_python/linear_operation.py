@@ -128,7 +128,11 @@ np.fliplr(A)        #flip in vertical
 
 
 #visialization
+
+'''specify step=0.01,do not include 1'''
 x=np.arange(0,1,0.01)
+'''specify len=100, do include 1'''
+x=np.linspace(0,1,100)
 y=np.sin(x)
 
 
@@ -142,6 +146,20 @@ plt.axis(['x_min','x_max','y_min','y_max'])
 
 plt.show()
 plt.close('figure_num')
+
+"""show plus"""
+f=plt.figure()
+ax=f.add_subplot(221)
+ax.scatter("x","y")
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_title('pic1')
+ax2=f.add_subplot(222)
+'''blablabla'''
+
+
+
+
 
 '''show matric in img'''
 plt.imshow(A,cmap='gray',interpolation='nearest')
