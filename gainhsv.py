@@ -8,14 +8,12 @@ min:83, 70, 194
 max:114, 255, 255
 '''
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-# ¶ÁÈ¡Í¼Æ¬²¢Ëõ·Å·½±ãÏÔÊ¾
 img = cv2.imread('D:/pycv/lessons/res/20.png')
 
 img = cv2.resize(img, (320, 256), interpolation=cv2.INTER_AREA)
 
 # img1 = cv2.imread('test.jpg')
 # img1 = cv2.resize(img1, (320, 256), interpolation=cv2.INTER_AREA)
-# BGR×ª»¯ÎªHSV
 HSV = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
 # HSV1 = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV)
 
@@ -50,7 +48,6 @@ while 1:
     # img1 = cv2.inRange(HSV1, lower, upper)
     height, width = img.shape[:2]
     size = (int(width * 1), int(height * 1))
-    # Ëõ·Å
     img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
     
     preprocess_Img = cv2.erode(img, kernel)
@@ -64,7 +61,7 @@ while 1:
 
 cv2.destroyAllWindows()
 
-# ----------------------------------------------------------È¡²¢¼¯£¬ºÄÊ±£¬µ«¸üÍêÕû£¬×ÃÇéÊ¹ÓÃ
+# ----------------------------------------------------------È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½
 
 #
 # cv2.namedWindow('H')

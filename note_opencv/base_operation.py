@@ -106,7 +106,7 @@ plt.show()
 
 				#show many pictures at the same time by matplotlib
 
-img_hand_gray=cv2.imread('resource\hand.jpg',cv2.IMREAD_GRAYSCALE)
+img_hand_gray=cv2.imread('/home/liyuxuan/vscode/res\hand.jpg',cv2.IMREAD_GRAYSCALE)
 ret,thresh_bin=cv2.threshold(img_hand_gray,127,255,cv2.THRESH_BINARY)
 ret,thresh_tozero=cv2.threshold(img_hand_gray,200,255,cv2.THRESH_TOZERO)
 ret,thresh_trunc=cv2.threshold(img_hand_gray,100,255,cv2.THRESH_TRUNC)

@@ -107,3 +107,28 @@ rcclub509daisuki
 
 lsof -i -n      //show tcp port status
 ss -tuln        //show tcp/udp port status
+
+
+make custom python pack:
+--mypack
+        |--mypack1-
+                __init__.py
+        |--mypack2-
+                __init__.py
+        |--setup.py
+
+write setup() in setup.py
+python setup.py bdist_wheel
+cd dist
+pip install mypack-version-py3-none-any.whl
+
+
+free up space by clean systemd journal logs
+journalctl --disk-usage
+sudo journalctl --vacuum-time=3d
+
+free up space by clean snaps
+sudo ~/shellscripts/myclean.sh
+
+add present user to tty group
+sudo usermod -aG tty $USER

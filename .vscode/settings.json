@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "/home/liyuxuan/pythonenv/python311/lib/python3.11/site-packages"
+    ]
+}

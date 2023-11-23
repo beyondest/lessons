@@ -1,4 +1,0 @@
-1.引用上级文件： ../cover1.jpg
-2.引用同级文件： cover1.jpg
-3.引用下级文件： cover/cover1.jpg
-4.引用上上级文件： ../../cover1.jpg

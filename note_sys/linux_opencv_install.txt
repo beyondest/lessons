@@ -6,4 +6,13 @@ python3.11 -m venv env_python311
 
 
 
-tensorboard --logdir=/path/to/logdir(.tfevents) --host=localhost    //然后打开网址
+tensorboard --logdir=/path/to/logdir(.tfevents) --host=localhost    
+
+
+//how to solve import error in jupyter book in linux
+//add below to settings.json
+{
+    "python.analysis.extraPaths": [
+        "/home/liyuxuan/pythonenv/python311/lib/python3.11/site-packages"
+    ]
+}
