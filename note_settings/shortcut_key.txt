@@ -4,7 +4,7 @@
 "ctrl+alt+l":       run code in interactive mode
 "ctrl++":           code size up
 "ctrl+alt+enter":   run single unit in ipynb
-
+"ctrl+alt+z":       go to defination
 
 "ctrl+p"            fold all
 "ctrl+l"            unfold all
