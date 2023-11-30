@@ -132,3 +132,28 @@ sudo ~/shellscripts/myclean.sh
 
 add present user to tty group
 sudo usermod -aG tty $USER
+
+
+
+wsl enabel usb driver can communication and other features origin linux have
+
+steps:
+        1. Download microsoft official wsl2 kernel version to latest
+        2. cd folder you unzip or untar, than do as follows:
+                zcat /proc/config.gz > .config
+                make menuconfig
+        3. In terminal of menuconfig, choose features you want to enabel , y is include to kernel, m is build as modules
+        4. exit and save, then do as follows:
+                #build modules
+                make modules -j $(nproc)
+                sudo make modules_install
+                #build kernel
+                make -j (nproc)
+                sudo make install
+                cp vmlinux /mnt/c/Users/liyuxuan/wsl_kernel
+
+        5. Edit .wslconfig:
+                [wsl2]
+                kernel=C:\\Users\\liyuxuan\\vmlinux
+        6. Restart wsl2, done
+
