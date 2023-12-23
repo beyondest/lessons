@@ -10,9 +10,13 @@ img.size	---------------amount of pixels=L*W*C(usually 3)
 img.dtype--------------kind of data
 img.shape--------------(length,width,channel(usually 3))
 =(y,x,3),'y is up_down,x is left_right'
+
 cont_coordinate=(x,y)
+
 '''x is from left to right, y is from up to down'''
 cv2.drawContours()
+
+
 '''
 draw cont follow this order:
 left_down, left_up, right_up, right_down	

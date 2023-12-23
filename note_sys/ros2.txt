@@ -1,0 +1,4 @@
+ros2 pkg create --build-type ament_python learning_pkg_python
+
+sudo rosdep init
+rosdep update   (no sudo!!!)
