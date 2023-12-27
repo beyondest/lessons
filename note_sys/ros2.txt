@@ -2,3 +2,18 @@ ros2 pkg create --build-type ament_python learning_pkg_python
 
 sudo rosdep init
 rosdep update   (no sudo!!!)
+
+
+sudo apt install python3-colcon-ros
+//auto complete
+sudo apt-get install python3-argcomplete
+
+rqt-graph       //something cool
+
+
+/opt/ros2/dashing/share msg|srv|actions defination
+
+
+
+ros2 srv package XXX
+ros2 srv show XXX
