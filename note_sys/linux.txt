@@ -93,7 +93,8 @@ find . -type f -ctime -0.083 //type:f = folder only, ctime:0.083= 2 hours
 ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github" //generate a pare of key_ssh
 eval $(ssh-agent -s)         //activate ssh-agent, you can add to bashrc to open autoly
 ssh-add ~/.ssh/github        //add specified private key to ssh-agent, now you can git push to git@github.com:beyondest/repo.git
-
+sudo vim /etc/ssh/sshd_config  //In remote linux , config AuthorizedKeysFile .ssh/authorized_keys and add PubkeyAuthentication yes
+sudo vim ~/.ssh/authorized_keys //copy nx1.pub to remote linux, ssh-add nx at local
 
 //not work
  adb shell am start -a android.media.action.VIDEO_CAPTURE &&adb shell screenrecord --output-format=h264 --size 720x1280 - | nc -l 127.0.0.1 9006
@@ -162,63 +163,35 @@ steps:
         6. Restart wsl2, done
 
 
-
-######################################Install ros2 on Ubuntu-18.04########################################
-sudo apt update && sudo apt install locales
-sudo locale-gen en_US en_US.UTF-8
-sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
-
-
-sudo apt update && sudo apt install curl gnupg2 lsb-release
-sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -o /usr/share/keyrings/ros-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-
-sudo apt update && sudo apt install -y \
-  build-essential \
-  cmake \
-  git \
-  python3-colcon-common-extensions \
-  python3-pip \
-  python-rosdep \
-  python3-vcstool \
-  wget
-# install some pip packages needed for testing
-python3 -m pip install -U \
-  argcomplete \
-  flake8 \
-  flake8-blind-except \
-  flake8-builtins \
-  flake8-class-newline \
-  flake8-comprehensions \
-  flake8-deprecated \
-  flake8-docstrings \
-  flake8-import-order \
-  flake8-quotes \
-  pytest-repeat \
-  pytest-rerunfailures \
-  pytest \
-  pytest-cov \
-  pytest-runner \
-  setuptools
-# install Fast-RTPS dependencies
-sudo apt install --no-install-recommends -y \
-  libasio-dev \
-  libtinyxml2-dev
-# install Cyclone DDS dependencies
-sudo apt install --no-install-recommends -y \
-  libcunit1-dev
-
-mkdir -p ~/ros2_dashing/src
-cd ~/ros2_dashing
-wget https://raw.githubusercontent.com/ros2/ros2/dashing/ros2.repos
-vcs import src < ros2.repos
-
-sudo rosdep init
-rosdep update
-rosdep install --from-paths src --ignore-src --rosdistro dashing -y --skip-keys "console_bridge fastcdr fastrtps libopensplice67 libopensplice69 rti-connext-dds-5.3.1 urdfdom_headers"
-
-cd ~/ros2_dashing/
-colcon build --symlink-install
+usbipd using on wsl2:
+        In windows administor powershell: usbipd bind --busid=4-3
+        In wsl2: sudo usbip attach -r localhost --busid=4-3
+        
+        sudo ufw allow 3240/tcp
+        sudo usbip detach -p 0/1/2  //use usbip port to see what port 
 
 
-. ~/ros2_dashing/install/setup.bash     #or you can add this to bashrc
+proxy set in jetson nx:
+        sudo visudo:
+                add "rcclub ALL=(ALL:ALL) NOPASSWD: /home/rcclub/ggbond/change.sh"
+        vim ~/.bashrc:
+                add "sudo ~/ggbond/change.sh"
+                add ". ~/ggbond/proxy.sh set"
+        that is all, you will not enter passwd again and again
+
+
+
+WSL2 hyper-V firewall:
+        only when this is enabled in CLASH, wsl bridge can connect to proxy 7890, so you need to run in NAT mode first and then turn to bridge mode?
+                vEthernet (WSL (Hyper-V firewall))
+                Address:
+                172.22.224.1
+                Netmask:
+                255.255.240.0 (20)
+                MAC:
+                00:15:5d:95:5a:c6
+
+WSL hyper-V vEthernet:
+        you have to disable Large send offload version2 ipv4
+                            Large send offload version2 ipv6
+        in vEthernet card configure 

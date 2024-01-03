@@ -44,6 +44,11 @@ firewall=true
 Do not open this, or GUI will fail
 dnsTunneling=true
 
-caocaocao
+
+wsl.exe --export Ubuntu-20.04 C:\Path\To\Backup\ubuntu-20.04-backup.tar
+ubuntu1804 config --default-user root
 
 
+
+// measure speed
+winsat disk 

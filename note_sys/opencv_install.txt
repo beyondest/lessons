@@ -6,6 +6,7 @@ python3.11 -m venv env_python311
 
 
 
+
 tensorboard --logdir=/path/to/logdir(.tfevents) --host=localhost    
 
 
@@ -16,3 +17,5 @@ tensorboard --logdir=/path/to/logdir(.tfevents) --host=localhost
         "/home/liyuxuan/pythonenv/python311/lib/python3.11/site-packages"
     ]
 }
+
+
