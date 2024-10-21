@@ -181,7 +181,252 @@ proxy set in jetson nx:
 
 
 
-WSL2 hyper-V firewall:
+
+
+```md
+## System Commands
+
+```bash
+lscpu               # Display CPU architecture information
+lsgpu               # Display GPU architecture information
+lshw                # Display detailed hardware information
+free -h             # Show system running memory in human-readable format
+top                 # Show active processes and memory usage
+df -h               # Display total disk status in human-readable format
+```
+
+## Ubuntu Desktop Installation
+
+```bash
+sudo apt-get install ubuntu-desktop
+sudo systemctl start lightdm            # Set default display manager service
+```
+
+## System Management
+
+```bash
+systemctl reset-failed                  # Reset failed services
+```
+
+## WSL Proxy Settings
+
+1. Open **Clash** and allow LAN.
+2. Download service mode.
+3. Open TUN mode.
+4. Enable firewall (a shield icon in General page).
+
+## Disk Usage Commands
+
+```bash
+du -sh *            # Show each folder size in present working directory
+du -sh .*           # Show hidden folder sizes
+du -sh              # Show total size of present directory
+du -sh --exclude=mnt -sh *    
+du -sh * | sort -rh # Show folder sizes sorted by size
+du -sh .[!.]* | sort -rh # Show hidden files sorted by size
+```
+
+## Log Management
+
+```bash
+sudo logrotate -f /etc/logrotate.d/my_logrotate   # Force rotate logs based on custom configuration
+sudo logrotate -vf /etc/logrotate.conf            # Verbose mode
+```
+
+### Logrotate Configuration Example
+
+```text
+/var/log/*.log {
+    su root root
+    size 100M
+    rotate 4
+    compress
+    missingok
+    notifempty
+    create 0644 root root
+}
+```
+
+## Python Commands
+
+```bash
+python3 --version           # Check Python version
+python3 -m venv myenv        # Create virtual environment
+source myenv/bin/activate    # Activate virtual environment
+```
+
+## Proxy Alias Example
+
+Add the following to `~/.bashrc`:
+
+```bash
+alias proxy="source /home/liyuxuan/proxy/proxy.sh"
+```
+
+Use the following commands:
+
+```bash
+proxy set
+proxy unset
+proxy test
+```
+
+## File Management
+
+```bash
+mv /path/to/source_file /path/to/destination_directory/    # Move file
+cp -r /path1/* /path2                                      # Copy directory recursively
+```
+
+
+## Archiving Files
+
+```bash
+tar -czvf file.tar.gz file1 file2
+tar -xzvf file.tar.gz -C /destination_directory
+unrar x target.rar -d /destination_directory
+```
+
+## Image Viewing Commands
+
+```bash
+eog img.jpg
+eog img.png
+identify img.png    # Identify image properties
+```
+
+## Pip Installation with Proxy
+
+```bash
+pip3 install --proxy http://172.23.32.1:7890 <package_name>    # Install pip package with proxy
+```
+
+## .NET Commands
+
+```bash
+dotnet new console    # Create C# project
+dotnet run            # Run C# project
+```
+
+## Search Files by Creation Time
+
+```bash
+find . -type f -ctime -0.083 # Find files created in the last two hours
+```
+
+
+
+### SSH Configuration on Remote Linux
+
+```bash
+sudo vim /etc/ssh/sshd_config
+# Set:
+# AuthorizedKeysFile .ssh/authorized_keys
+# PubkeyAuthentication yes
+
+sudo vim ~/.ssh/authorized_keys    # Add public key to authorized_keys
+```
+
+## ADB Commands for Screen Recording
+
+```bash
+adb exec-out screenrecord --output-format=h264 - | ffplay -framerate 60 -probesize 32 -sync video
+adb forward tcp:8080 tcp:8080     # Set Android IP Webcam port forwarding
+```
+
+## Network Commands
+
+```bash
+lsof -i -n    # Show TCP port status
+ss -tuln      # Show TCP/UDP port status
+```
+
+## Custom Python Package Creation
+
+1. Directory structure:
+
+```text
+-- mypack
+    |-- mypack1
+        __init__.py
+    |-- mypack2
+        __init__.py
+    |-- setup.py
+```
+
+2. Write `setup()` in `setup.py`.
+3. Create the package:
+
+```bash
+python setup.py bdist_wheel
+cd dist
+pip install mypack-version-py3-none-any.whl
+```
+
+## Free Disk Space by Cleaning Logs
+
+```bash
+journalctl --disk-usage
+sudo journalctl --vacuum-time=3d    # Clean systemd journal logs older than 3 days
+```
+
+## Add User to TTY Group
+
+```bash
+sudo usermod -aG tty $USER
+```
+
+## WSL2 USB Driver Support
+
+1. Download the latest Microsoft WSL2 kernel.
+2. Configure and build the kernel:
+
+```bash
+zcat /proc/config.gz > .config
+make menuconfig
+# Enable the features you need
+make modules -j $(nproc)
+sudo make modules_install
+make -j $(nproc)
+sudo make install
+cp vmlinux /mnt/c/Users/liyuxuan/wsl_kernel
+```
+
+3. Edit `.wslconfig`:
+
+```ini
+[wsl2]
+kernel=C:\\Users\\liyuxuan\\vmlinux
+```
+
+4. Restart WSL2.
+
+## USBIP Usage on WSL2
+
+```bash
+usbipd bind --busid=4-3               # In Windows PowerShell
+sudo usbip attach -r localhost --busid=4-3  # In WSL2
+```
+
+## Proxy Settings on Jetson NX
+
+1. Edit `sudo visudo`:
+
+```bash
+rcclub ALL=(ALL:ALL) NOPASSWD: /home/rcclub/ggbond/change.sh
+```
+
+2. Edit `~/.bashrc`:
+
+```bash
+sudo ~/ggbond/change.sh
+. ~/ggbond/proxy.sh set
+```
+
+## WSL2 Hyper-V Configuration
+
+
+- WSL2 hyper-V firewall:
         only when this is enabled in CLASH, wsl bridge can connect to proxy 7890, so you need to run in NAT mode first and then turn to bridge mode?
                 vEthernet (WSL (Hyper-V firewall))
                 Address:
@@ -191,7 +436,7 @@ WSL2 hyper-V firewall:
                 MAC:
                 00:15:5d:95:5a:c6
 
-WSL hyper-V vEthernet:
+- WSL hyper-V vEthernet:
         you have to disable Large send offload version2 ipv4
                             Large send offload version2 ipv6
         in vEthernet card configure 
