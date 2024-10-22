@@ -26,8 +26,11 @@ View change shortcuts:
 - View error list: `Ctrl + Alt + E`
 - View output window: `Ctrl + Alt + O`
 - View solution explorer: `Ctrl + Alt + L`
+- Split Editor Vertically: `Alt + W + V` when you have 2 tabs open
+- Split Editor Horizontally: `Alt + W + H` when you have 2 tabs open
 
 ## Work Operations
+
 - **Compare two file differences**: Right-click on the file in the solution explorer and click "Compare with".
 - **Add dependent project**: Drag the project file to the project that requires a dependent project.
 
@@ -35,8 +38,12 @@ View change shortcuts:
 - Change font size of Intellisense: Go to `Font -> Statement Completion`.
 - Change font size of window when mouse floats over a variable: Go to `Font -> Editor Tooltip`.
 - AutoComplete settings:  
-  Click on the little button below the Extensions toolbar. It will show "Switch between Intellisense Mode". This disables space for autocomplete, and only uses TAB for autocomplete.  
+  - Click on the little button below the Extensions toolbar. It will show "Switch between Intellisense Mode". This disables space for autocomplete, and only uses TAB for autocomplete.  
 - Encoding Settings
-1. Navigate to `Tools -> Customize -> Command`.
-2. Change the menu to `File -> Add Command -> File -> Advanced Saving Settings`.
-3. Then, go to `File -> Advanced Saving Settings` and change the encoding to your preference.
+  1. Navigate to `Tools -> Customize -> Command`.
+  2. Change the menu to `File -> Add Command -> File -> Advanced Saving Settings`.
+  3. Then, go to `File -> Advanced Saving Settings` and change the encoding to your preference.
+- Enable Unity Project Properties Editing:  
+  - ``Tools -> Opetions -> Tools for Unity -> Miscellaneous -> Access to project properties = True``
+- Insert Mode
+  - If you press Insert on keyboard, then mouse light will turn thick  

@@ -1,239 +1,38 @@
-lscpu
-lsgpu
-lshw
-free -h     //cat system running memory (16g often)
-top         //show more system pid and running memory too
-df -h       //show total disk status
-sudo apt-get install ubuntu-desktop
-sudo systemctl start lightdm            //set default show service
 
-systemctl reset-failed
-how to set proxy for wsl:open clash allow lan，download service mode ，open tun mode ， enable firewall（a shield icon in General page）
+# Command Notes
 
-du -sh *           //show each folder size in pwd
-du -sh .*          //show total pwd size
-du -sh             //same as up
-du -sh --exclude=mnt -sh *    
-du -sh * |sort -rh  //show in order
-du -sh .[!.]*|sort -rh //show hidden files size .local/share/Trash !!!
+### System Commands:
+- `lscpu`  
+- `lsgpu`  
+- `lshw`  
+- `free -h` // Shows system memory usage (16GB commonly).  
+- `top` // Displays more system PIDs and running memory.  
+- `df -h` // Shows total disk status.  
 
-sudo logrotate -f /etc/logrotate.d/my_logrotate //config custom logrotate
-sudo logrotate -vf /etc/logrotate.conf
+### Desktop & LightDM Service:
+- `sudo apt-get install ubuntu-desktop`  
+- `sudo systemctl start lightdm` // Set default display service.  
 
+### Reset Failed Services:
+- `systemctl reset-failed`  
 
-the content is as below:
-/var/log/*.log {
-    su root root
-    size 100M
-    rotate 4
-    compress
-    missingok
-    notifempty
-    create 0644 root root
-}
-
-python3 --version   //python3.6.9
-python3 -m venv myenv   //make virtual env for python369
-source myenv/bin/activate
-
-
-/home/liyuxuan/proxy/proxy.sh
-~/.bashrc   alias proxy="source /home/liyuxuan/proxy/proxy.sh"
-
-proxy set
-proxy unset
-proxy test
-
-mv /path/to/source_file /path/to/destination_directory/         //move file to anoter path
-
-cp -r /pathq1/* /path2            //copy file recursively
- 
-
-git add .
-git commit -m "my first commit"
-git reflog
-git reset --soft hash
-git push remote_name master:master
-git pull --rebase remote_name master:master
-git pull remote_name master:master
-git branch -a   show all branch
-git branch -r   show remote branch
-git branch new_branch_name
-git branch -d deleted_branch
-git branch -m old_name new_name
-
-
-
-tar -czvf file.tar.gz file1 file2
-tar -xzvf file.tar.gz -C /destination_directory
-unrar x target.rar -d /destination_directory
-
-
-eog img.jpg
-eog img.png
-identify img.png
-
-pip3 install --proxy http://172.23.32.1:7890    //pip3 need to set proxy alone, even use proxy.sh
-
-
-
-sudo apt-get install -y *** //auto use yes
-sudo apt update
-
-
-dotnet new console    //create c# project in pwd
-dotnet run
-
-while [[ "$PWD" != "/" ]] && [ ! -d "build" ]; do cd ..; done &&[ -d "build" ] && cd "build"    //ways to find build by keep searching
-
-find . -type f -ctime -0.083 //type:f = folder only, ctime:0.083= 2 hours
-
-
-
-ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github" //generate a pare of key_ssh
-eval $(ssh-agent -s)         //activate ssh-agent, you can add to bashrc to open autoly
-ssh-add ~/.ssh/github        //add specified private key to ssh-agent, now you can git push to git@github.com:beyondest/repo.git
-sudo vim /etc/ssh/sshd_config  //In remote linux , config AuthorizedKeysFile .ssh/authorized_keys and add PubkeyAuthentication yes
-sudo vim ~/.ssh/authorized_keys //copy nx1.pub to remote linux, ssh-add nx at local
-
-//not work
- adb shell am start -a android.media.action.VIDEO_CAPTURE &&adb shell screenrecord --output-format=h264 --size 720x1280 - | nc -l 127.0.0.1 9006
-
-//work but screen
- adb exec-out screenrecord --output-format=h264 - |    ffplay -framerate 60 -probesize 32 -sync video  -
-
-
-//run adb_handler.py then run adb_camera.py or just do as below
-adb forward tcp:8080 tcp:8080   //set as port in android ipwebcam
-"rtsp://127.0.0.1:8080/h264_pcm.sdp"
-
-192.168.1.123
-rcclub509daisuki
-
-lsof -i -n      //show tcp port status
-ss -tuln        //show tcp/udp port status
-
-
-make custom python pack:
---mypack
-        |--mypack1-
-                __init__.py
-        |--mypack2-
-                __init__.py
-        |--setup.py
-
-write setup() in setup.py
-python setup.py bdist_wheel
-cd dist
-pip install mypack-version-py3-none-any.whl
-
-
-free up space by clean systemd journal logs
-journalctl --disk-usage
-sudo journalctl --vacuum-time=3d
-
-free up space by clean snaps
-sudo ~/shellscripts/myclean.sh
-
-add present user to tty group
-sudo usermod -aG tty $USER
-
-
-
-wsl enabel usb driver can communication and other features origin linux have
-
-steps:
-        1. Download microsoft official wsl2 kernel version to latest
-        2. cd folder you unzip or untar, than do as follows:
-                zcat /proc/config.gz > .config
-                make menuconfig
-        3. In terminal of menuconfig, choose features you want to enabel , y is include to kernel, m is build as modules
-        4. exit and save, then do as follows:
-                #build modules
-                make modules -j $(nproc)
-                sudo make modules_install
-                #build kernel
-                make -j (nproc)
-                sudo make install
-                cp vmlinux /mnt/c/Users/liyuxuan/wsl_kernel
-
-        5. Edit .wslconfig:
-                [wsl2]
-                kernel=C:\\Users\\liyuxuan\\vmlinux
-        6. Restart wsl2, done
-
-
-usbipd using on wsl2:
-        In windows administor powershell: usbipd bind --busid=4-3
-        In wsl2: sudo usbip attach -r localhost --busid=4-3
-        
-        sudo ufw allow 3240/tcp
-        sudo usbip detach -p 0/1/2  //use usbip port to see what port 
-
-
-proxy set in jetson nx:
-        sudo visudo:
-                add "rcclub ALL=(ALL:ALL) NOPASSWD: /home/rcclub/ggbond/change.sh"
-        vim ~/.bashrc:
-                add "sudo ~/ggbond/change.sh"
-                add ". ~/ggbond/proxy.sh set"
-        that is all, you will not enter passwd again and again
-
-
-
-
-
-```md
-## System Commands
-
-```bash
-lscpu               # Display CPU architecture information
-lsgpu               # Display GPU architecture information
-lshw                # Display detailed hardware information
-free -h             # Show system running memory in human-readable format
-top                 # Show active processes and memory usage
-df -h               # Display total disk status in human-readable format
-```
-
-## Ubuntu Desktop Installation
-
-```bash
-sudo apt-get install ubuntu-desktop
-sudo systemctl start lightdm            # Set default display manager service
-```
-
-## System Management
-
-```bash
-systemctl reset-failed                  # Reset failed services
-```
-
-## WSL Proxy Settings
-
-1. Open **Clash** and allow LAN.
+### Set Proxy for WSL:
+1. Open Clash and allow LAN.
 2. Download service mode.
-3. Open TUN mode.
+3. Enable TUN mode.
 4. Enable firewall (a shield icon in General page).
 
-## Disk Usage Commands
+### Disk Usage:
+- `du -sh *` // Show each folder size in the present working directory (PWD).  
+- `du -sh .*` // Show total PWD size.  
+- `du -sh` // Same as above.  
+- `du -sh --exclude=mnt -sh *`  
+- `du -sh * | sort -rh` // Show in order.  
+- `du -sh .[!.]* | sort -rh` // Show hidden files size (e.g., `.local/share/Trash`).  
 
-```bash
-du -sh *            # Show each folder size in present working directory
-du -sh .*           # Show hidden folder sizes
-du -sh              # Show total size of present directory
-du -sh --exclude=mnt -sh *    
-du -sh * | sort -rh # Show folder sizes sorted by size
-du -sh .[!.]* | sort -rh # Show hidden files sorted by size
-```
-
-## Log Management
-
-```bash
-sudo logrotate -f /etc/logrotate.d/my_logrotate   # Force rotate logs based on custom configuration
-sudo logrotate -vf /etc/logrotate.conf            # Verbose mode
-```
-
-### Logrotate Configuration Example
+### Log Rotation:
+- `sudo logrotate -f /etc/logrotate.d/my_logrotate` // Configure custom logrotate.  
+- `sudo logrotate -vf /etc/logrotate.conf`  
 
 ```text
 /var/log/*.log {
@@ -247,196 +46,135 @@ sudo logrotate -vf /etc/logrotate.conf            # Verbose mode
 }
 ```
 
-## Python Commands
+### Python Virtual Environment:
+- `python3 --version` // Python 3.6.9  
+- `python3 -m venv myenv` // Create virtual environment for Python 3.6.9.  
+- `source myenv/bin/activate`  
 
-```bash
-python3 --version           # Check Python version
-python3 -m venv myenv        # Create virtual environment
-source myenv/bin/activate    # Activate virtual environment
-```
+### Proxy Setup Script:
+- `/home/liyuxuan/proxy/proxy.sh`  
+- `~/.bashrc`  
+  - `alias proxy="source /home/liyuxuan/proxy/proxy.sh"`  
 
-## Proxy Alias Example
+#### Proxy Commands:
+- `proxy set`  
+- `proxy unset`  
+- `proxy test`  
 
-Add the following to `~/.bashrc`:
+### Move and Copy Files:
+- `mv /path/to/source_file /path/to/destination_directory/`  
+- `cp -r /path1/* /path2` // Copy files recursively.  
 
-```bash
-alias proxy="source /home/liyuxuan/proxy/proxy.sh"
-```
+### File Archiving:
+- `tar -czvf file.tar.gz file1 file2`  
+- `tar -xzvf file.tar.gz -C /destination_directory`  
+- `unrar x target.rar -d /destination_directory`  
 
-Use the following commands:
+### Image Commands:
+- `eog img.jpg`  
+- `eog img.png`  
+- `identify img.png`  
 
-```bash
-proxy set
-proxy unset
-proxy test
-```
+### PIP with Proxy:
+- `pip3 install --proxy http://172.23.32.1:7890` // PIP needs to set proxy separately, even when using proxy.sh.
 
-## File Management
+### Package Installation:
+- `sudo apt-get install -y ***` // Auto use yes.  
+- `sudo apt update`  
 
-```bash
-mv /path/to/source_file /path/to/destination_directory/    # Move file
-cp -r /path1/* /path2                                      # Copy directory recursively
-```
+### .NET Commands:
+- `dotnet new console` // Create C# project in PWD.  
+- `dotnet run`  
 
+### Search Build Directory:
+- `while [[ "$PWD" != "/" ]] && [ ! -d "build" ]; do cd ..; done && [ -d "build" ] && cd "build"`  
 
-## Archiving Files
+### File Search:
+- `find . -type f -ctime -0.083` // Search files modified in the last 2 hours.
 
-```bash
-tar -czvf file.tar.gz file1 file2
-tar -xzvf file.tar.gz -C /destination_directory
-unrar x target.rar -d /destination_directory
-```
+### SSH Key Generation:
+- `ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github"` // Generate SSH key pair.  
+- `eval $(ssh-agent -s)` // Activate SSH agent.  
+- `ssh-add ~/.ssh/github` // Add private key to SSH agent.  
 
-## Image Viewing Commands
+### Remote SSH Config:
+- `sudo vim /etc/ssh/sshd_config` // In remote Linux, configure `AuthorizedKeysFile .ssh/authorized_keys` and enable `PubkeyAuthentication yes`.  
+- `sudo vim ~/.ssh/authorized_keys` // Copy the public key to remote Linux and `ssh-add` the private key locally.
 
-```bash
-eog img.jpg
-eog img.png
-identify img.png    # Identify image properties
-```
+### ADB Commands:
+- `adb shell am start -a android.media.action.VIDEO_CAPTURE && adb shell screenrecord --output-format=h264 --size 720x1280 - | nc -l 127.0.0.1 9006`  
+- `adb exec-out screenrecord --output-format=h264 - | ffplay -framerate 60 -probesize 32 -sync video`  
 
-## Pip Installation with Proxy
+### ADB Forward Port:
+- `adb forward tcp:8080 tcp:8080` // Set port for Android IP webcam.  
+- `rtsp://127.0.0.1:8080/h264_pcm.sdp`  
 
-```bash
-pip3 install --proxy http://172.23.32.1:7890 <package_name>    # Install pip package with proxy
-```
+### TCP Port Status:
+- `lsof -i -n` // Show TCP port status.  
+- `ss -tuln` // Show TCP/UDP port status.
 
-## .NET Commands
-
-```bash
-dotnet new console    # Create C# project
-dotnet run            # Run C# project
-```
-
-## Search Files by Creation Time
-
-```bash
-find . -type f -ctime -0.083 # Find files created in the last two hours
-```
-
-
-
-### SSH Configuration on Remote Linux
-
-```bash
-sudo vim /etc/ssh/sshd_config
-# Set:
-# AuthorizedKeysFile .ssh/authorized_keys
-# PubkeyAuthentication yes
-
-sudo vim ~/.ssh/authorized_keys    # Add public key to authorized_keys
-```
-
-## ADB Commands for Screen Recording
-
-```bash
-adb exec-out screenrecord --output-format=h264 - | ffplay -framerate 60 -probesize 32 -sync video
-adb forward tcp:8080 tcp:8080     # Set Android IP Webcam port forwarding
-```
-
-## Network Commands
-
-```bash
-lsof -i -n    # Show TCP port status
-ss -tuln      # Show TCP/UDP port status
-```
-
-## Custom Python Package Creation
-
-1. Directory structure:
-
+### Creating Python Package:
 ```text
--- mypack
-    |-- mypack1
+--mypack
+    |--mypack1-
         __init__.py
-    |-- mypack2
+    |--mypack2-
         __init__.py
-    |-- setup.py
+    |--setup.py
 ```
 
-2. Write `setup()` in `setup.py`.
-3. Create the package:
+- Write `setup()` in `setup.py`.  
+- `python setup.py bdist_wheel`  
+- `cd dist`  
+- `pip install mypack-version-py3-none-any.whl`  
 
-```bash
-python setup.py bdist_wheel
-cd dist
-pip install mypack-version-py3-none-any.whl
-```
+### Free Space Commands:
+- `journalctl --disk-usage`  
+- `sudo journalctl --vacuum-time=3d` // Free up space by cleaning systemd journal logs.  
+- `sudo ~/shellscripts/myclean.sh` // Clean snaps.
 
-## Free Disk Space by Cleaning Logs
+### Add User to TTY Group:
+- `sudo usermod -aG tty $USER`  
 
-```bash
-journalctl --disk-usage
-sudo journalctl --vacuum-time=3d    # Clean systemd journal logs older than 3 days
-```
+### Enable USB Driver in WSL:
+1. Download Microsoft's latest WSL2 kernel version.
+2. Unzip and follow these steps:
+    ```bash
+    zcat /proc/config.gz > .config
+    make menuconfig
+    ```
+3. In `menuconfig`, select features to enable (Y to include in kernel, M to build as modules).
+4. Save, exit, and then:
+    ```bash
+    make modules -j $(nproc)
+    sudo make modules_install
+    make -j $(nproc)
+    sudo make install
+    cp vmlinux /mnt/c/Users/liyuxuan/wsl_kernel
+    ```
+5. Edit `.wslconfig`:
+    ```ini
+    [wsl2]
+    kernel=C:\\Users\\liyuxuan\\vmlinux
+    ```
+6. Restart WSL2.
 
-## Add User to TTY Group
+### USBIP on WSL2:
+- In Windows admin PowerShell: `usbipd bind --busid=4-3`.  
+- In WSL2: `sudo usbip attach -r localhost --busid=4-3`.  
+- Allow port 3240 with: `sudo ufw allow 3240/tcp`.  
+- Detach with: `sudo usbip detach -p 0/1/2`.  
 
-```bash
-sudo usermod -aG tty $USER
-```
-
-## WSL2 USB Driver Support
-
-1. Download the latest Microsoft WSL2 kernel.
-2. Configure and build the kernel:
-
-```bash
-zcat /proc/config.gz > .config
-make menuconfig
-# Enable the features you need
-make modules -j $(nproc)
-sudo make modules_install
-make -j $(nproc)
-sudo make install
-cp vmlinux /mnt/c/Users/liyuxuan/wsl_kernel
-```
-
-3. Edit `.wslconfig`:
-
-```ini
-[wsl2]
-kernel=C:\\Users\\liyuxuan\\vmlinux
-```
-
-4. Restart WSL2.
-
-## USBIP Usage on WSL2
-
-```bash
-usbipd bind --busid=4-3               # In Windows PowerShell
-sudo usbip attach -r localhost --busid=4-3  # In WSL2
-```
-
-## Proxy Settings on Jetson NX
-
-1. Edit `sudo visudo`:
-
-```bash
-rcclub ALL=(ALL:ALL) NOPASSWD: /home/rcclub/ggbond/change.sh
-```
-
-2. Edit `~/.bashrc`:
-
-```bash
-sudo ~/ggbond/change.sh
-. ~/ggbond/proxy.sh set
-```
-
-## WSL2 Hyper-V Configuration
-
-
-- WSL2 hyper-V firewall:
-        only when this is enabled in CLASH, wsl bridge can connect to proxy 7890, so you need to run in NAT mode first and then turn to bridge mode?
-                vEthernet (WSL (Hyper-V firewall))
-                Address:
-                172.22.224.1
-                Netmask:
-                255.255.240.0 (20)
-                MAC:
-                00:15:5d:95:5a:c6
-
-- WSL hyper-V vEthernet:
-        you have to disable Large send offload version2 ipv4
-                            Large send offload version2 ipv6
-        in vEthernet card configure 
+### Jetson NX Proxy Setup:
+1. Edit sudo permissions:
+    ```bash
+    sudo visudo:
+    rcclub ALL=(ALL:ALL) NOPASSWD: /home/rcclub/ggbond/change.sh
+    ```
+2. Edit `.bashrc`:
+    ```bash
+    vim ~/.bashrc:
+    sudo ~/ggbond/change.sh
+    . ~/ggbond/proxy.sh set
+    ```
+3. Done, no need to re-enter the password.
