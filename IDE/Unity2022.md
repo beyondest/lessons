@@ -3,7 +3,14 @@
    - A: Click on the center of the gizmo on the top right, and it will return to normal.
    - Further Info:
         The gizmo has two modes: **Perspective** and **Isometric view**. When in isometric view, flythrough does not work while approaching objects.
+2. - Q: Some objects not rendered properly and show only in pink
+   - A: Material shader of that object is not compatible with your current render pipeline. Select that object material, and then go `edit->rendering->materials->convert selected to ...`
+   - Further Info:  
+        Standard shader for built-in render pipeline;  
+        URP for URP;  
+        HURP for HURP;  
 
+        
 # Useful tips
 
 - Expand all chiled items:  
