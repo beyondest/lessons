@@ -57,6 +57,19 @@
 ``Ctrl + 8``  Audio Mixer View  
 ``Ctrl + 9``  Lighint View  
 ``Ctrl + 0``  Project Manager View  
-``Ctrl + U``  Undo History View  
+``Ctrl + U``  Undo History List View  
+
+
+
+# Unity Animator
+## Blend Tree
+First Parameter: X  
+Second Parameter: Y  
+2D means 2 parameters, drag red point to see which motion is now making a biggest difference.
+  
+Choose blend type:
+- FreeForm Cartesian and FreeForm Directional can have more than one motion in one direction.  
+- Simple Directional can only have one.  
+
 
 

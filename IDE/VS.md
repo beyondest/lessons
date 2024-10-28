@@ -20,6 +20,8 @@
   `Ctrl + R, Ctrl + R` (while selecting variable name)
 - Multi-row edit: `Alt + Mouse Drag`
 - Move whole line up/down: `Alt + Up/Down Arrow`
+- Format selected code: `Ctrl + K Ctrl + D`  
+
 
 ### View
 View change shortcuts:
