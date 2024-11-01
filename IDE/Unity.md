@@ -34,6 +34,9 @@
 - Set to `D:/unitypro/Unity_GI_Cache`
 - If the cache is cleaned, the scene will turn dark. Reopening the scene by double-clicking on it in the project window will solve the issue.
 
+# Asset Download Folder
+- Set to `D:/unitypro/Unity_GI_Cache/UnityAssets`
+- Go to `Preference -> Package Manager -> My Assets`
 
 # Different Icon Meanings in the Hierarchy Window
 
@@ -70,6 +73,53 @@ Second Parameter: Y
 Choose blend type:
 - FreeForm Cartesian and FreeForm Directional can have more than one motion in one direction.  
 - Simple Directional can only have one.  
+
+## Animation
+
+- 2 Core Concepts 
+  - Animation Data (Animation clips)
+    - Value
+    - Bindings
+  - Animation Blendings
+    - Animation controller
+    - Animation State
+
+
+### Animation Align up
+In phase: `Transition offset`   
+More gradually: `Transition duration`  
+
+### Read-only Property
+Animation clips imported with model is read-only. Show read-only property should be set to view them in Animation window.  
+`Duplicate Animation Clip` to remove read-only property.  
+
+### Field Access in animation window
+Animation clips can be imported in `Context` and `Asset` mode.  
+Context: Select `gameobject` contained animation controller contained animation clip. Field of gameobject is accessable  
+Asset: Select animation clip in `project window`. Field of gameobject is not accessable
+
+### Animation Speed
+Second:Frame e.g. 1:34 means 1 second plus 34 frames  
+`Sample Rate` is viewed by select show sample rate, which means how many frames per second.  
+
+### Record and Preview Mode
+`Red` to Record, `Blue` to Preview. View `scene and animation` window both to see effects.  
+
+### Is Active
+
+In context mode, a gameobject has an attribute called `is active`, only visible in animation window add component menu. This is to prevent gameobject being disabled which will cause a lot of `bugs`.  
+
+### Animation Curve Shape
+
+Right click on keypoint on curve, change `tangents` settings of both sides or just drag tangent handler
+
+### Ripple Editing
+
+Moving one keyframe `Vertically` to cause other keyframes automatically moving vertically, like a ripple effect.   
+Enable or disable in `...` up right side
+
+
+
 
 
 
