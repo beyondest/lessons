@@ -1,6 +1,6 @@
-# Learning Notes
 
-## Usual Formats in Unity
+
+# Usual Formats in Unity
 - `.wav` - Audio
 - `.mat` - Materials
 - `.fbx` - Model, Animations, Mesh (Filmbox)
@@ -12,53 +12,46 @@
 - `.asset` - Universal resource formats
 - `.hlsl` - HLSL code file
 
-## HLSL: High-Level Shading Language
+# HLSL: High-Level Shading Language
 - Specialized for Direct3D API, GLSL for OpenGL and Vulkan, Metal Shading Language for Apple.
   
-### Recommended Books:
-- "Real-Time Rendering"
-- "Introduction to Computer Graphics"
-- "Shaders for Game Programmers and Artists"
-- "Introduction to 3D Game Programming with DirectX 12"
+- **Recommended Books**  
+  - "Real-Time Rendering"
+  - "Introduction to Computer Graphics"
+  - "Shaders for Game Programmers and Artists"
+  - "Introduction to 3D Game Programming with DirectX 12"
 
-### Learning Steps:
-1. Unity Standard Shader and URP/Lit Shader
-2. Shader Graph / HLSL
+- **Learning Steps**  
+  - Unity Standard Shader and URP/Lit Shader
+  - Shader Graph / HLSL
 
-## Model Structure:
-- **Model** = Mesh + Animations + Coordinates
-- **Material** = Texture + Shader (works on Mesh)
+# Model Structure:
 
-### Learning Steps:
-1. Blender - Mesh & Model
+## Learning Steps:
+1. Blender - Mesh & Model       (Maya/3DS Max/Cinema 4D)
 2. Photoshop/GIMP - Texture
 3. Material
 4. Shader
 
-## Read-Only Prefab
+# Read-Only Prefab
 - With a white paper on the cube. Usually models.
 
-## Animation Controller
-### Notes:
-- State machine
 
-### Tips:
-- If the default value is false, do not check the box next to the bool parameter.
 
-## Update Loop:
-1. **Rendering Update**: `Update()`. Called each frame, depends on the complexity of calculations and rendering.
-2. **Physics Update**: `FixedUpdate()`. Called independently of rendering.
+# Model 
+Basic concepts:  
+- **Model** = Mesh + Animations + Coordinates .(Material = Texture + Shader (works on Mesh))
 
-## Naming Conventions
+- **Skinning**  
+  Skinning is the process of connecting each vertex of a mesh to one or multiple bones and then giving those bones a weight to affect that vertex.Only(?) Animated models have a skinned mesh.
+- **Bones**  
+  bones are represented by the Transforms of a model, so each vertex moves with a weighted combination of the Transforms it is skinned to. 
+- **Rig** 
+  Same as skeleton ? Physical structure of all bones
 
-|              | C#            | C++                            | Python       |
-|--------------|---------------|--------------------------------|--------------|
-| Public       | `myVariable`  | `myVariable` / `my_variable`   | `my_variable`|
-| Private      | `m_MyVariable`| `m_MyVariable`                 | `_my_variable`|
-| Class        |               | `MyClass`                      |              |
+- **Avatar**
+  abstract rig, or actual rig in game , which may be different (usaually part of) rig
 
-## C# Generics vs. C++ Templates
 
-## How to Choose What to Show in the Main Zone/Scene View:
-1. Right-click on the scene tab in the main zone.
-2. Select the overlay menu.
+
+

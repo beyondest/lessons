@@ -27,3 +27,14 @@ void main(){
     add(a,b,out sum);
 }
 ```
+
+
+## Naming Conventions
+
+|              | C#            | C++                            | Python       |
+|--------------|---------------|--------------------------------|--------------|
+| Public       | `myVariable`  | `myVariable` / `my_variable`   | `my_variable`|
+| Private      | `m_MyVariable`| `m_MyVariable`                 | `_my_variable`|
+| Class        |               | `MyClass`                      |              |
+
+
