@@ -38,3 +38,13 @@
 To set custom keybindings in `keyboardbindings.json`, make sure to use the correct tasks:
 - `-runtask` is invalid
 - `runtask` is valid
+
+
+## Issue
+- VSCode git cannot publish to github, always stuck
+  Solved by creating repo on github and clone it by vscode
+
+
+
+
+
