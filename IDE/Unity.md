@@ -10,6 +10,9 @@
         URP for URP;  
         HURP for HURP;  
 
+3. - Q: Why use hash of string instead of itself, and why prefer pre-hash string?
+   - A: Faster. String operation is expensive, as well as hash method, but if you pre-hash and store it one time, it speeds up.
+
         
 # Useful tips
 
@@ -85,18 +88,55 @@
     - Animation State
 
 ## Animator 
- 
-- **Blend Tree**  
-  - First Parameter: X  
-  - Second Parameter: Y  
-  - 2D means 2 parameters, drag red point to see which motion is now making a biggest difference.
+
+- **Animator Structure**
+  - Animator (Controller)
+    - Animator Layers
+      - State Machines
+        - States/State Machines
+          - Animation Clips 
+  
+- **Animator Controller**
+  - *Hierachy effect*: This controls the hierachy all below it, which means if a parent gameobject has an animator controller A, then A controls itself and its children; So any config applys on A will apply to every chiled object which has an avatar.
+  - *Update Method*: 
+    - Normal: Affected by rendering time, Update -> OnAnimatorMove -> OnAnimatorIK -> LateUpdate
+    - Animate Physics: Bind with physics system, FixedUpdate -> OnAnimatorMove -> InternalUpdate of Physics System -> OnAnimatorIK 
+    - Unscaled time: Independtly call in a constant frequency, not affected by Time.timeScale
+  - Culling Mode (Performance Sensitive): Choose which property change will not be applied caused by animation when the hierarchy object is out of view of camera
+  - Flow Control in code: Play/PlayFixed; CrossFade/CrossFadeFixed == State run; Transition
+
+
+- **Blend**
+  Basic concepts: use weights to combine animations that change same property
+  - *Blend Tree*(only introduce 2d)
+    - First Parameter: X  
+    - Second Parameter: Y  
+    - 2D means 2 parameters, drag red point to see which motion is now making a biggest difference.
+  - *Transitions*
+    - In phase settings
+    - Interruption Source: choose which state's transition can interrupt this transition
+    - Ordered Interruption: if enabled, lower priority transition cannot interrupt higher ones
+    - Any State: A special state, represents every state added, which can transit from but cannot be transitted to
+    - State Machine: A purely organizational tool which can be used for pack similar states up
+  - *Layers*
+    - Layers are used to blend animations that will happen in same time. e.g.: Heavy Breath, Injured Run/Walk
+    - Addictive/Override: heavy breath animation as addictive(both in import settings and layer settings), base animation as override
+    - Sync/Timing: normal run layer set sync, contains injured run layer; enable timing to make transitions happen in same time
+    - IK Pass: enable evaluate ik in monobehavior
+
+
+
 
 - **Choose blend type**  
   - FreeForm Cartesian and FreeForm Directional can have more than one motion in one direction.  
   - Simple Directional can only have one.  
 
 - **Animation State**
-
+  - Use Parameter to control 
+  - Foot IK(Bug Fix): Only worked for Humanoid. Use to estimate when each feet is supposed to be planted on ground, and will lock foot position. Fix feet moving during idle animation and feet sliding during walk.
+  - Write Defaults: Whether or not animation will change property A at moment B, animator will change it every frame. Enable this to write to default or disable this to keep previous value.
+  - List of Transitions: will check it *in order*.
+  
 - **Animation Align up**  
   - In phase: `Transition offset`   
   - More gradually: `Transition duration`  
