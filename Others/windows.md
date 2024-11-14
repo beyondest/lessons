@@ -10,8 +10,10 @@
 - `systeminfo`  // Show all system hardware info, e.g., memory, does not show disk space
 - `fsutil volume diskfree C:`  // Show disk space
 
-## Directory and SSH
+## Directory 
 - `dir . test.txt`
+- 
+## SSH 
 - `ssh rcclub@192.168.1.123`  // 509rcclub GPU best server
 
 ## Windows Alias

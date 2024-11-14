@@ -72,3 +72,14 @@ ssh-keygen -f ~/.ssh/github -t ed25519 -C "for github"
 eval $(ssh-agent -s)           # Activate ssh-agent
 ssh-add ~/.ssh/github          # Add private key to ssh-agent
 ```
+
+
+## gitignore
+exclude folder but include specific subfolder
+
+```
+# Ignore everything in build/ except logs/
+!build/
+build/*
+!build/logs/
+```
