@@ -122,8 +122,8 @@ c.z=[1,2,3]
 
 
                         #assert
-assert a and b          #same as try a and b except asserterror
-'''if a and b=0 then raise asserterror and stop runcode'''
+assert 1
+'''will not raise error, but if assert 0 , it will raise AssertionError'''
 
 
                         #enumerate
@@ -151,6 +151,27 @@ a=counter()
 for i in range(10):
     next(a)
     
+                        #with
+with open('test.txt','w') as f:
+    f.write('hello world')
+'''equal to'''
 
-            
+f = open('test.txt','w')
+try:
+    f.write('hello world')
+except Exception as e:
+    print(e)
+finally:
+    f.close()
+                        #globle variable
+a=1
+def change():
+'''if you change global variable, you must use global keyword'''
+    global a
+    a+=1
+def not_change():
+'''if you dont change global variable, it is safe not to use global keyword'''
+    print(a)
+
+
             
