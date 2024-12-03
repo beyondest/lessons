@@ -178,3 +178,8 @@
     . ~/ggbond/proxy.sh set
     ```
 3. Done, no need to re-enter the password.
+
+
+## Net Issues:
+- Q: change dns to public dns
+- A: `sudo vim /etc/resolv.conf` and add `nameserver 8.8.8.8` or `nameserver 8.8.4.4`
