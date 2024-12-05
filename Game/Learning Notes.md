@@ -53,5 +53,11 @@ Basic concepts:
   abstract rig, or actual rig in game , which may be different (usaually part of) rig
 
 
+# Game Art
+
+## Workflow:
+
+- Concept Artists: Sketching - Sketching the model in Photoshop or Illustrator.
+- 3D Modellers: Modeling - Creating the 3D model in Blender.
 
 
