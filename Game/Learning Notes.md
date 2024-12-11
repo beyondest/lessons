@@ -1,4 +1,4 @@
-
+# Essential Rule: have an online pressence and present your skills
 
 # Usual Formats in Unity
 - `.wav` - Audio
@@ -29,6 +29,8 @@
 
 ## Learning Steps:
 1. Blender - Mesh & Model       (Maya/3DS Max/Cinema 4D)
+   - UV Mapping
+   - Texturing
 2. Photoshop/GIMP - Texture
 3. Material
 4. Shader

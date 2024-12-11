@@ -1,7 +1,7 @@
 # Art Notes
 
 ## Specific Noun
-- Zbrush : A way to add details to 3D models
+- Zbrush : A way to add details to 3D models: `Scupturing tiling textures using Zbrush`
 - Ubisoft has foliage or biome artists
 
 ## Environment
