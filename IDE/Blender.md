@@ -32,6 +32,7 @@
 - `Tab` : Edit/Object mode switchup
 - `Drag from the left up corner of the sub window` : Add new window
 - `Numpad 1 - 9` : Change the view in different orientation, e.g., 1 for main view, 3 for side view, 7 for top view
+- `Shift + ~` : Fly mode, if in z camera view, this will enable moving camera at the same time.
 
 
 
@@ -55,6 +56,9 @@
 - `Press N, set Lock` : camera to view, and press Z to enter camera view mode. Then , move scene .
 - `Shift + Tab` : Switch between Snap mode, this will snap the object to the nearest vertex, edge or face.
 - `Alt + Z` : Enable X-Ray mode, this will show all vertices even behind the obstacle.
+- `Ctrl + L` : Link materials of one object to others selected. Notice that the mother object has to be selected last.
+- `Ctrl + A` : Apply, after changing the size of object, you need to apply the scale to make that remain 1.
+- `M` : Add to new collection
 
 
 # Unknown Name
@@ -87,6 +91,7 @@
 - **Proportional editing**: `O in edit mode` enable a circle to choose a area of points to edit in edit mode
 - **Polygons Number Setting**: `F9` after adding, you have a chance to change polygons. If you deselect, press F9 to bring it back.
 - **Snap**: `Shift + Tab in edit mode` when enabled and set to Face or Face Project, will project the selected vertices to the nearest face.
+- **Extrude**: `E while selecting an edge in edit mode` will duplicate the edge and move it to where you want. 
 
 
 ## Select
@@ -124,3 +129,9 @@ Geometry node is a cutomized system that allow you to add a custom modifier(type
 - Expose a value to modifier: Drag the value input port to group input port, then you can change the value in its own modifier.
 - Duplicate a object which has a geometry node will link the geometry node to the duplicated object.
 - Click the number next to the shield icon in  modifier -> geometry node will disable the link between geometry nodes.
+
+
+# Texture
+
+## Tricks
+- `Ctrl + Shift + T while clicking on BSDF node` : The best way to import textures quickly, after enabled blender add-on node wrangler.
