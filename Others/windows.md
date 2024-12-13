@@ -2,6 +2,15 @@
 - `netplwiz`  // See user info in GUI
 - `whoami`
 - `msinfo32`  // See system info in GUI
+- `msconfig`  // Change system settings in GUI
+- `odbcad32`  // ODBC data source configuration
+- `services.msc`  // Manage services in GUI
+- `lusrmgr.msc` // Local user and group management in GUI
+- `mmc` // Console Platform
+- `devmgmt.msc` // Device Manager
+- `diskmgmt.msc` // Disk Management
+- `compmgmt.msc` // Computer Management
+- `regedit`
 
 ## Windows Activation
 - `irm massgrave.dev/get | iex`  // Activate Windows Pro using settings in prompt

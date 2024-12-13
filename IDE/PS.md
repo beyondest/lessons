@@ -15,17 +15,17 @@
 ## Keybooard Shortcuts
 
 ### Settings
-`Ctrl + K` : Preferences
-`Shift + Alt + Ctrl + K` : Setting Keyboard Shortcuts
-`Ctrl + Alt + C`: Change Canvas Size
+`Ctrl + K` : Preferences  
+`Shift + Alt + Ctrl + K` : Setting Keyboard Shortcuts  
+`Ctrl + Alt + C`: Change Canvas Size  
 
 
 ### Colors
-`Shift + Alt + Right Click`: Select Color of Pen
-`Alt in brush mode` : Select Color of Pen according to cursor position
-`Control + Backspace`: Fill with Background Color
-`Alt + Backspace`: Fill with Foreground Color
-`] or [` : Increase/Decrease Brush Size
+`Shift + Alt + Right Click`: Select Color of Pen  
+`Alt in brush mode` : Select Color of Pen according to cursor position  
+`Control + Backspace`: Fill with Background Color  
+`Alt + Backspace`: Fill with Foreground Color  
+`] or [` : Increase/Decrease Brush Size  
 
 
 ### Tools

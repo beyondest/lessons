@@ -21,6 +21,10 @@
 - Multi-row edit: `Alt + Mouse Drag`
 - Move whole line up/down: `Alt + Up/Down Arrow`
 - Format selected code: `Ctrl + K Ctrl + D`  
+- Control all breakpoints : `Ctrl + Alt + B`
+- New Vetical Split Window Group: `Right Click on Tab -> New Vertical Group`
+- Rename variable all together: `Ctrl + R, Ctrl + R` (while selecting variable name)
+- Add Debug Breakpoint: `F9`
 
 
 ### View
@@ -49,3 +53,4 @@ View change shortcuts:
   - ``Tools -> Opetions -> Tools for Unity -> Miscellaneous -> Access to project properties = True``
 - Insert Mode
   - If you press Insert on keyboard, then mouse light will turn thick  
+- 
