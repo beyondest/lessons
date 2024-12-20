@@ -14,6 +14,7 @@ git branch -d <deleted_branch>
 git branch -m <old_name> <new_name>
 ```
 
+
 ### LFS (Large File Storage)
 
 ### Initialize Git LFS
@@ -59,7 +60,6 @@ TIF files should be added to LFS. To do this:
         ```bash
         Remove-Item -Recurse -Force .\.git\
         ```
-
 
 
 

@@ -2,7 +2,7 @@
 
 ## Shortcuts
 
-### Operations
+
 - Reopen closed tab: `Ctrl + K, Ctrl + Z`
 - Open Intellisense: `Ctrl + J`
 - Close Intellisense: `Esc`
@@ -43,6 +43,7 @@ View change shortcuts:
 ## Settings
 - Change font size of Intellisense: Go to `Font -> Statement Completion`.
 - Change font size of window when mouse floats over a variable: Go to `Font -> Editor Tooltip`.
+-
 - AutoComplete settings:  
   - Click on the little button below the Extensions toolbar. It will show "Switch between Intellisense Mode". This disables space for autocomplete, and only uses TAB for autocomplete.  
 - Encoding Settings

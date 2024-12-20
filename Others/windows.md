@@ -1,3 +1,16 @@
+## Q&A
+
+- Q:Google and edge hyjack by 360 website , or organized by organization
+    - A:regedit -> HKEY_CURRENT_USER\Software\Policies\Chorme, remove any additions except default; remove any policies in chorme:\\policy
+    
+
+- Q: How to disable internal keyboard in win11 lenovo:
+    - A: Uninstall driver Standard PS/2 and HID Keyboard Device(this is the one when no external keyboard is connected),
+    and then go to` gpedit.msc -> Computer Configuration -> Administrative Templates -> System -> Device Installation -> Device Installation Restrictions -> Prevent installation of devices not described by other policies`, enable this option.
+    - P.S.: only delete ps2 fail to disable internal keyboard; use `sc config i8042prt start=disabled` fail to disable internal keyboard.
+
+
+
 ## User and System Information in GUI
 - `netplwiz`  // See user info in GUI
 - `whoami`
