@@ -29,11 +29,14 @@
 
 ### View
 View change shortcuts:
-- View error list: `Ctrl + Alt + E`
+- View error list: `Ctrl + Alt + C`
 - View output window: `Ctrl + Alt + O`
 - View solution explorer: `Ctrl + Alt + L`
+- View the code coverage window: `Ctrl + E + R`
 - Split Editor Vertically: `Alt + W + V` when you have 2 tabs open
 - Split Editor Horizontally: `Alt + W + H` when you have 2 tabs open
+- Collapse all regions: `Ctrl + M, Ctrl + A`
+- Expand all regions: `Ctrl + M, Ctrl + M`
 
 ## Work Operations
 
@@ -54,4 +57,5 @@ View change shortcuts:
   - ``Tools -> Opetions -> Tools for Unity -> Miscellaneous -> Access to project properties = True``
 - Insert Mode
   - If you press Insert on keyboard, then mouse light will turn thick  
-- 
+- Code Coverage Percentage View:
+  - right-click on one of the columns and select Add/Remove Columns.. > then select to add columns you want to see.

@@ -1,4 +1,6 @@
-确实，如果在 **DLL** 中没有任何导出的符号，Visual Studio 在编译时将不会生成 `.lib` 文件。这是因为 `.lib` 文件（作为导入库）包含了 DLL 中符号的引用，它告诉链接器如何找到 DLL 中的导出函数。如果 DLL 没有任何导出符号，链接器就无法创建对应的导入库文件 `.lib`，因此你无法在其他程序中链接到该 DLL。
+# Add dependencies to test project by adding path *.lib file to Additional Dependencies in project properties
+
+如果在 **DLL** 中没有任何导出的符号，Visual Studio 在编译时将不会生成 `.lib` 文件。这是因为 `.lib` 文件（作为导入库）包含了 DLL 中符号的引用，它告诉链接器如何找到 DLL 中的导出函数。如果 DLL 没有任何导出符号，链接器就无法创建对应的导入库文件 `.lib`，因此你无法在其他程序中链接到该 DLL。
 
 ### **为什么没有导出符号时不生成 `.lib` 文件：**
 

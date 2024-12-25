@@ -13,6 +13,8 @@
     sprintf_s(buffer, sizeof(buffer), fmt, __VA_ARGS__); \
     OutputDebugStringA(buffer); \
 }
+
+
 // Global variable, used to store shared information
 int sharedData = 0;
 char buffer[50];
