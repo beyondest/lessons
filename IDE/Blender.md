@@ -6,6 +6,8 @@
 2. Frame Select or View Select or Focus is not working
    - Q: I can't focus on a selected object by numpad .
    - A: Unlock the view from other objects, usually camera
+3. Tablet pressure is not working
+   - A: Try to restart Blender with tablet plugged in, not just plug in tablet while blender is running.
 
 # Basic Settings
 
@@ -25,7 +27,7 @@
 - `N` : Properties
 - `S` : Scale
 - `G` : Move, if press middle mouse, will move along axis; if press x/y/z, will move in that direction; if press shift, will move slowly
-- `R` : Rotate, if press middle mouse, will rotate around axis
+- `R` : Rotate, if press middle mouse, will rotate around axis,if press x/y/z, will rotate in that direction; if press shift, will rotate slowly, if press ctrl, will rotate in integers, if type 90, will rotate 90 degrees.
 - `H` : Hide
 - `Alt + H` : Show all
 - `Shift + H` : Hide All
@@ -47,11 +49,12 @@
 - `Shift + Left Arrow` : Go to the most left frame
 - `Ctrl + ,` : open Preferences
 - `Ctrl + Shift + I` : Import FBX file
-
+- `Shift + right click` : Move the center cursor to the mouse position, the objects will summon in this position after that.
 
 
 - `Ctrl + Double finger drag` : Zoom in x or Zoom in y, depending on which axis you are dragging
 - `Double finger zoom` : Zoom both x and y
+- `Ctrl + Space` : Fuul screen selected window
 
 
 
@@ -73,11 +76,15 @@
 
 
 # Animation
+
 ## NLA Editor
 
-### Q&A:
-- Q: Replace mode not working, always blend animations
-- A: After 4.2, if 2 animations have different changed variables, e.g., animation A change location, animation B change scale, than these 2 always blend when you play.
+- Replace mode not working, always blend animations:  After 4.2, if 2 animations have different changed variables, e.g., animation A change location, animation B change scale, than these 2 always blend when you play.
+## Graph Editor
+
+- `Normalize`: this will normalze all data in the graph to 0-1 range in spite of the data original range. This is useful when you want to edit the handle of curves rather than change the value. DO NOT CHANGE VALUE in this mode, cause it will remap to the original range and it is hard to see.
+
+
 
 # Edit Mode
 
@@ -136,9 +143,57 @@ Geometry node is a cutomized system that allow you to add a custom modifier(type
 - Duplicate a object which has a geometry node will link the geometry node to the duplicated object.
 - Click the number next to the shield icon in  modifier -> geometry node will disable the link between geometry nodes.
 - `Ctrl + Right Click Drag`: cut the link between different geometry nodes.
+- `Ctrl + X`: delete the selected node with the link remained.
 
 
 # Texture
 
+## Align the real world size before doing anything after import a texture, this is very important.
+e.g. the texture downloaded is 2.5mx2.5m brick wall texture
+- create a plane, default 2mx2m, duplicate to make a 8mx4m wall
+- link image texture to the plane
+- select all the vertices of the plane, and press `U` , select `Smart UV Project`
+- in uv editor, notice the right direction corresponding between the plane and the texture, by clicking `UV sync selection`
+- notice that the edit square in uv editor view represents the 2m x 2m in blender scene, but the brick texture is 2.5mx2.5m, so we need to scale the edit square to 0.8, so as to align the real world size.
+
+e.g. still, the texture downloaded is 2.5mx2.5m brick wall texture
+- create a plane, resize to 8mx4m
+- link image texture to the plane
+- 8/2.5 = 3.2, 4/2.5 = 1.6, so we need to scale the edit square to 3.2 in x, 1.6 in y
+
+now the 2 planes made prior will align the real world size
+
 ## Tricks
 - `Ctrl + Shift + T while clicking on BSDF node` : The best way to import textures quickly, after enabled blender add-on node wrangler.
+
+
+
+# Material
+
+## Subsurface Scattering && Make shadow softer
+Go to `Material -> Surface -> Subsurface`, change weight to 1 to enable, and set Radius below (corresponding to R,G,B) to 1, and set Scale (change the effect of the subsurface) to 0.05. Then shadows will become softer, and you can drag weight to 0 to see the difference.
+
+
+
+# Camera
+
+- **Camera View Zone** : press `numpad 0` to enter camera view, and then press `home` to center the yellow view zone, and use middle mouse to adjust the zone size.
+
+
+# Lighting
+
+- **Use black wall to control room light intensity** : Create a black wall on which the light cast on, and adjust the black value to control the light intensity.
+
+
+
+# Rendering
+
+- **Face Orientation**: click on `face orientation` and check if there are any red faces in your render sence, if there are, you need to select them in edit mode, and click on `Inside`
+
+## Steps before rendering
+- **Check the render settings**
+- **Check the face orientation**
+- **Check the lighting**
+- **Check the objects position, is there any overlapping or weird objects?**
+- **Check the objects that should not be rendered in the scene, and click off camera button in the collection menu**
+- **Check the camera view**
