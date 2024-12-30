@@ -56,6 +56,11 @@ function Get-FolderSizes {
 function Enter-Workspace { Set-Location "D:\VS_ws" }
 ```
 
+## Recursively delete files ending with a specific extension
+
+```
+Get-ChildItem -Path "E:\path\to\your\directory" -Recurse -Filter "*.ru.srt" | Remove-Item
+``` 
 
 
 
