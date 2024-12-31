@@ -52,7 +52,10 @@
 `Ctrl + E` : Merge Layers
 `Alt in move mode` : Fast Copy/Paste
 `Ctrl + G` : Group/Ungroup Layers
-
+`Shift + ,` : Go to first brush preset
+`Shift + .` : Go to last brush preset
+`,/.` : Go to previous/next brush preset
+ 
 ## Tools Introduction
 
 - Smudge Tool: Allows you to blur color between two colors.
