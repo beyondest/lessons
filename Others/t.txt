@@ -1,0 +1,221 @@
+All games Skyrim Special Edition Free FPS Articles The guide
+Total views
+0
+The guide
+/ / / /
+MANAGE
+PERFORMANCE
+I. Personally tested and endorsed
+A. Strictly no gameplay change
+Spoiler:   Show
+06/2021 For players: to easily set your performance settings: Bethini
+10/2021 For players: the last SKSE (2.0.20) improves performance (cf the .txt explaining what's new in the archive), in part in link with CPU priority, addressed just below. I perceive a lot more ?uidity.
+06/2021 For players: this part is based on the work of xrayys optimized skyrim cpu balance.
+To assign more CPU to Skyrim, we have to increase CPU Priority.
+To avoid cpu hyperthreading switching , which Skyrim doesn't manage well, and generates stutter, we have to setup CPU a?nity.
+To setup CPU priority and a?nity, here is an easy guide in the sticky comment of MO2 and CPU A?nity .
+OR To simply install CPU priority setup only, a mod: Skyrim Priority SE - skse plugin; boring3 is working on including the cpu a?nity in the mod too.
+06/2021 For players: to speed up startup: PrivatePro?leRedirector SE - Faster game start (INI ?le cacher)
+With 664 mods at the time, I went from 3 minutes and 52 seconds to 3 minutes and 5 seconds => saved 48 seconds = 20%!
+This mod seems to let bugs from other mods be more noticeable, some other mods have been ?xed consequently.
+Still one documented not-understood limitation . See if you can live with it, I sure can :D
+09/2022 For players: to speed up startup: skee64.ini should have this string of text:
+This seems to be often missing (well, the player who mentioned this to me had it missing on AE, and me too on SE).
+The player who mentioned this to me wrote: "My start up loading time went from ?ve minutes or longer to no more then a minute.".
+Personally, my total startup went from 3 minutes 5 seconds to 2 minutes 45 seconds, which means 20 seconds saved = 10% saved.
+10/2021 For players: optimized Skyrim SE BSAs by Dreifels using CAO 64 provides Skyrim bsa optimized for speed. I wish we had read performance increase numbers, if some emerge, please tell
+me in the comments.
+06/2021 For players: to reduce your draw calls number: Lightened Skyrim
+10/2021 For players: to avoid  low FPS with many ESP or ESM plugins installed (explanation for multithread-enabled developer: there are at least 4 nested iteration loops the game does in every
+frame, and the lowest loop iterates for each plugin installed, and this code runs on multiple threads, and for each plugin it locks a mutex every time): SSE Fixes .
+Most of its functionalities are now included into SSE Engine Fixes (skse64 plugin), but it seems that the mutex function is not (source one year ago).
+Moreover, SSE Engine ?xes includes a ?x which unties vertical look sensitivity from framerate and form/tree lod reference caching which can give a massive FPS boost in certain areas.
+So install both SSE Fixes and SSE Engine Fixes.
+If you have some de?nite info about the inclusion of not-inclusion of the mutex function of SSE Fixes into SSE Engine Fixes, please let me know in the comments section.
+Animation Limit Crash Fix SSE solves better than SSE Engine Fixes a crash when too much animation, and improves FPS marginally too at the same time. It is advised to install it by the SSE Engine
+Fixes team. You'll have to indicate in the SSE Engine Fixes ini ?le that you have this mod installed.
+06/2021 For players: to simply have better performance, I perceive more ?uidity: SSE Display Tweaks . "DXGI ?ip model can bypass desktop composition (DWM) and send frames directly to the
+screen, making windowed mode perform just as good or better than exclusive with less stutter, reduced input lag and higher framerates. Another bene?t is better integration with features like HDR
+and G-Sync. [...] Lowering frame latency may also reduce stutter (signi?cantly in some cases), there's a detailed explanation above MaxFrameLatency option in the con?g."
+09/2021 For players: Skyrim Project Optimization SE adds occlusion culling planes in interiors so that objects behind walls aren't calculated by the GPU. Of course, you need to check this mod's
+compatibility with your installed mods modifying interiors. For JK, JK's interiors Patch Collection has a patch.
+10/2021 For players:  Exterior FPS Boost introduces occlusion culling planes in the exteriors. Look at eFPS - O?cial Patch Hub and eFPS - O?cial Patch for The Great City series too.
+10/2021 For modders: you may add occlusion culling planes into your mods like in SPO above to increase performance.
+09/2021 For players: Shadow Boost (for fallout4) changes shadow distance (which can't yet be changed by SSE FPS Stabilizer) to maintain FPS. It was made for FO4, but works on SSE. However, I didn't ?nd any
+report on how well it works with SSE FPS Stabilizer. Please test and report :-) !
+09/2022 For players: Shadow Boost for SSE is there :)
+08/2021 For players: Vanilla Script (micro)Optimizations rewrites the vanilla scripts to speed them up.
+10/2021 For modders: you may use the lessons of Vanilla Script (micro)optimizations above when writing your scripts.
+09/2022: For players: Vanilla Scripting Enhancements optimizes certain vanilla scripts with PO3 Extender to reduce script lag when using lots of mods.
+09/2021 For players: powerofthree's Tweaks provides speedup functions in the experimental section of its ini.
+01/2023 For players: Papyrus Tweaks NG, and particularly its tweaks and experimental section, is a game-changer as it speeds up scripts so much!
+01/2023 For players: OnMagicEffectApply Replacer replaced OnMagicEffectApply with OnHit that doesn't trigger so many times.
+01/2023 For players: Animation Queue Fix is another revolutionary mod. It ?xes the animations queue getting overloaded when a lot of animations are queued for loading at the same time.
+01/2023 For players: Recursion monitor detects broken papyrus scripts stuck in recursion and prevents huge framerate lag.
+09/2022 For players: Rob's Bug Fixes - Our xEdit Scripts and its Synthesis version allows to remove references to objects, navrefs, etc, with a ccoordinate outside of the [-30k, 30k] range. Those bug the rendering
+engine and impact performance. Some user claims to have gained 20 fps from this.
+For modders: clean your mod with this, or don't introduce this kind of problem in the ?rst place :)
+10/2021 For players: HDT SMP XMLs provides hdt smp xmls optimized for speed; this means for example animated capes with collisions are a lot less CPU hungry.
+10/2021 For players: Faster HDT-SMP dramatically improves performance. This makes a huge difference as it allows for things like animated guard capes without breaking your FPS every time you approach a city
+or a group of imperials/stormcloaks.
+09/2021 For modders: FPS smashed by HDT SMP explains how to have better performance when using HDT SMP.
+09/2022 For players: NVIDIA Re?ex support is a SKSE plugin which can more than halve render latency. Supports SE, AE and VR
+06/2021 For players: to speed up disk i/o, if you have lots of available RAM (it at least helps some stuttering): Primocache
+It's paying, but there is a one-month free trial so that you can see if it's worth your money. It's way cheaper than a new SSD.
+B. Strictly speaking, this alters appearance or gameplay, so I put it apart
+Spoiler:   Show
+09/2021 For players: Skyrim Landscape and Water Fixes is a huge collection of ?xes regarding graphic glitches, misplaced objects, improved navmeshes and more around Tamriel worldspace.
+It removes a lot of duplicate objects including trees, which can increase FPS in several areas.
+06/2021 For players: to have a better image with better performance: Cleaned Skyrim SE Textures replaces original textures by cleaned textures, better compressed, so a better image quality with a
+better performance.
+Alternate and complementary mods are in the untested section below.
+09/2021 For players: MrShadowBlood made some cleaned textures to improve performance for some mods, too.
+10/2021 For modders: you may check that the resolution and the compression of your textures are optimal, like in Cleaned Skyrim above.
+10/2021 For players: SSE FPS Stabilizer allows to change ini settings dynamically to maintain a constant targeted fps.
+Otherwise said, you can have reduced settings for demanding areas like whiterun, and still have the highest settings with the most extraordinarily beautiful skyrim where the area is less demanding!
+Shizof said he would integrate Shadow Boost later in the SSE version; the VR version already includes it.
+10/2021 For players: to lower fps used by grass, or to improve grass for the same fps: Grass FPS Booster. I might remove this one in the future, as there are lots of incompatible grass mods, and
+lessons from the best are learnt by the others. Please consider by yourself depending on your load order.
+10/2021 For players: Dynamic Distant Objects LOD - DynDOLOD allows to generate your own distant objects dynamically, so for all your mods; in the words of Nevieth: "if you select the medium or
+low preset, it can actually give you more performance than not using it at all. Plus it makes the game look nicer and has less pop-in and stutter."
+10/2021 For players: if you use Dyndolod 3 grass lods, you have to use No Grass In Objects grass cache functionality too; in that case, you'll save time during grass generation by using Worldspaces
+with Grass SSEEdit Script for No Grass In Objects.
+09/2021 For players: go through the list of mods using SPID (in the requirements section of SPID), and replace your mods using scripts by similar mods using SPID. Choose mods based on it when
+they're available rather than mods based on papyrus scripts.
+10/2021 For modders: use SPID above in your mods rather than native papyrus scripting, when possible.
+10/2021 For players: go through the list of mods using Skyrim Platform (in the requirements section of Skyrim Platform), and replace your mods using scripts by similar mods using Skyrim Platform.
+It is a library to create plugins for Skyrim SE with TypeScript and Chromium Embedded Framework. Mods done with it have much more performance.
+10/2021 For modders: use Skyrim platform above in your mods rather than papyrus scripting. Compared to C++ coding, it's easier to test and debug. If you want to rewrite papyrus code to be used on
+Skyrim Platform, you can use Papyrus-2-Typescript.
+06/2021 For players: when starting the game, automatically "Continue" (so no waiting just to click on Continue; you can do something else in the meantime, the game is really ready to play when you
+hear audio :P): Start On Save
+06/2021 For players: To avoid  waiting time  when opening doors: Get On With It - No more waiting for doors
+Of course, you need to check this mod's compatibility with your installed mods modifying door meshes.
+C. To understand your performance
+Spoiler:   Show
+06/2021 For players and modders: Skyrim Performance Monitor 64
+06/2021 For players and modders: Elephant's Script Latency Tester
+D. These are not mods, but actions to consider
+Spoiler:   Show
+For players:
+06/2021: updating your GPU drivers
+iLoadMode=1
+VORTEX
+The powerful open-source mod manager
+from Nexus Mods.
+LEARN MORE
+NEXUS MODS
+Home
+Games
+Mods
+News
+Statistics
+About us
+Careers
+DISCOVER
+All mods
+New mods
+Popular mods
+Trending mods
+All images
+All videos
+SUPPORT
+Help
+Wiki
+API reference
+Give feedback
+Report a bug
+Unban requests
+DMCA
+COMMUNITY
+Forums
+Discord
+Support authors
+Contact us
+NETWORK STATS
+Members
+38,018,187
+Mods
+429,691
+Topics
+3,241,070
+Kudos given
+1,952,954
+Posts
+31,072,189
+Page served in
+0.070s
+[nexusmods-
+747f7c86b9-cjplg]
+Copyright © 2023 Black Tree Gaming Ltd. All rights reserved. Terms of Service | Privacy Policy
+06/2021: reviewing your GPU drivers settings
+06/2021: overclocking your GPU/CPU
+09/2021: update your ENB , Boris adds constantly performance improvements.
+II. Other elements, not yet tested by me
+Spoiler:   Show
+01/2023: For players: Survival Mode Improved - SKSE  is an SKSE plugin implementation of Survival Mode Improved. Survival Mode has been rebuilt from the ground up utilizing C++ rather than
+Bethesda's much slower scripting language, Papyrus. No more straining the Papyrus VM with Survival Mode's polling, hit events, etc.
+09/2022 For players: Optimized USSEP Valdr quest - USSEP added a script that supposedly avoids a problem with Valdr during his quest. That script however doesn't seem to end properly and can
+cause performance issues due to how its implemented. This is a ?x.
+01/2023: For players: The "Optimised scripts for ..." serie by Borgut1337 (XPMSSE, SPERG, SummerMyst, Ordinator, Vokrii, Apocalypse, Enhanced Blood Textures)
+01/2023 For players: NVIDIA Rebar optimizes ?ows between CPU and GPU, for 30xx+ cards.
+10/2021 For player and modders: Cathedral Assets Optimizer is the tool used to convert and/or optimize mods and bsa ?les. Here is the How to convert and optimize a mod using CAO 64 guide.
+Players can optimize their mods with this guide, modders can follow it when releasing mods providing bsa to increase their performance. One of the explained improvements is how to repack bsa
+with no compression so as to save CPU during BSA read by Skyrim. It allows too to limit/reduce the size of textures of a mod, so you can improve the performance of a mod where the authors has
+only provided large textures. Here is an endorsement.
+09/2022 For players: Remove Loading Fade to Black allows to remove some waiting time. You can consider Instant Container Access too.
+06/2021 For players: XRAYY SSE ENB Vulkan beta replaces the dx11 api by the Vulkan api, which is interesting for AMD users as the AMD drivers seem to be insu?ciently optimized.
+xrayys frame drops ctd knowledge base explains about draw calls limit, and gives some tests info about the vulkan driver.
+Scaling solutions:
+09/2021 For players: AMD FSR is available on every steam game including Skyrim SE, it does "lossless scaling"  to render at a lower resolution, then upscale.
+AMD FSR project for Skyrim VR  to render at a lower resolution, then upscale.
+2 guides for render at lower discussion then upscale through SSE Display Tweaks: Mechanical Panda - Performance Setup for 1080P monitors, and Sharpening Oversampling Shader - An ENB
+postprocess for improved visual ?delity.
+Other solutions include: Magpie, Lossless scaling, IntegerScaler.
+10/2021 For players: FSR for Skyrim Now (using magpie) is a guide for a Magpie solution emulating FSR.
+01/2023 For players: NVIDIA Image Scaling is a driver-based upscaling feature, and it doesn’t use AI or any other fancy stuff like Tensor core. Instead, it uses a combination of sharpening and an
+upscaling algorithm. This feature that takes the image from a smaller input resolution and with directional upscaling and a bit of sharpening outputs an image that seems to be of higher resolution,
+ultimately boosting in-game FPS. A skyrim-speci?c guide.
+08/2021 For players: textures alternate mods:
+Alternate mod for low-end pc: uno?cial performance optimized textures AKA (UPOT) (the sticky post of Cleaned Skyrim explains how you should choose)
+Other alternate mod: Simply Optimized Textures for SSE (but less textures covered, and no new version since 2016)
+Other alternate mod: Optimized SSE Textures -FPS BOOST- (reduces textures size, so interesting for pc with little VRAM, but degrades image)
+16/05/2022 Other alternate mod: Cleaned Skyrim SE Textures - Performance Optimized - Kartoffel's Cleaned Skyrim SE Textures for increased performance with minimal loss in visual quality. Treats
+diffuse texture ?les differently from normal maps, specular ?les, and other types of textures that are less visible. It also furthers downscales heavy VRAM hitters like grass and ?ora, and maintains
+higher resolution for larger objects like mountains and dragons.
+09/2022 Base coat: Cleaned and Upscaled textures for pretty much the entire game packaged into Skyrim - Texture BSAs. No actual mods to load. For SE and AE.
+06/2021 For players and modders: Papyrus Pro?ling Parser: to analyze scripts performance
+01/2023 For players and modders: Papyrus Pro?ler: to analyze scripts performance
+09/2021 For players and modders: The OSD of SSE Display Tweaks also has good Papyrus analyzing abilities.
+III. Mods degrading quality, but needing mentioning
+Spoiler:   Show
+09/2021 For players:  Paramount - FPS Galore - Alternatives is a huge collection of mods exchanging quality for performance.
+10/2021 For players: No grass in cities prevents generating grass in cities and around cities when in cities, which helps performance, particularly in Riften. You still bene?t from grass lods if you
+installed them with Dyndolod 3 :)
+IV. Load Accelerator
+Spoiler:   Show
+I do not advise anymore Load Accelerator to speed up loading screens, as my tests show no real improvement, even though fps do really go through the roof during loading screens.
+Still, maybe someone will show measures which display contexts where it is useful.
+Please do :)
+See Sticky post if interested about this.
+###########################################################################################################
+09/2021
+STABILITY
+Spoiler:   Show
+Are only included below mods that ?x CTD or bugs making us lose GPU or CPU cycle, and which aren't already mentioned in the performance section.
+Example of ?x not included: Player Eyes Blink Fix.
+Bug Fixes SSE
+USSEP
+Actor Limit Fix
+Enchantment Reload Fix SE It's included in Scrambled bugs.
+Weapons Armor Clothing and Clutter Fixes
+Hearth?res Houses Building Fix
+powerofthree's Tweaks
+Scrambled Bugs
+WoW Dragon Mounds CTD Fix
+Chillwind Depths CTD Fix
+12 September 2022, 10:30AM
+Added on
+17 January 2023, 1:31PM
+Edited on Written by
+DaydreamingDay

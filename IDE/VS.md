@@ -1,5 +1,11 @@
 # Useful Tips for Visual Studio (VS)
 
+## Q&A
+
+- Q: Visual Studio cannot autocomplet unity csharp scripts via double click script in unity
+- A: In unity, Edit->Preference->External Tools, set code editro to visual studio
+
+
 ## Shortcuts
 
 
@@ -59,3 +65,5 @@ View change shortcuts:
   - If you press Insert on keyboard, then mouse light will turn thick  
 - Code Coverage Percentage View:
   - right-click on one of the columns and select Add/Remove Columns.. > then select to add columns you want to see.
+
+
