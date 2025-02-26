@@ -13,6 +13,9 @@
 3. - Q: Why use hash of string instead of itself, and why prefer pre-hash string?
    - A: Faster. String operation is expensive, as well as hash method, but if you pre-hash and store it one time, it speeds up.
 
+4. - Q: Cannot see Unity.Entities namespace in visual studio
+   - A: `Preferences -> External Tools-> Regenerate project files`, reopen vs by double click
+
         
 # Useful tips
 
@@ -220,4 +223,56 @@ Basic Concepts:
 
 
 
+# UnityEngine API
 
+## Basic API
+
+- **Start**:
+   Called before Update called the first time = called just when the gameobject it attached to is created the first time
+- **OnDestroy**:
+   Called when the script is destroyed.
+
+
+
+
+# UI
+
+### **`Sprite Mode`**
+`Sprite Mode` 决定了你的 **Sprite 纹理** 如何被使用，在 `Inspector` 里可以选择：
+- **Single（默认）**：整个图片作为一个单独的 Sprite 使用。
+- **Multiple**：允许 **从一张大图裁剪多个 Sprite**（适用于 **Sprite Sheet** 或 **Tilemap**）。
+
+| 模式 | 影响 |
+|------|------|
+| **Single** | 适用于普通 UI Image、按钮等，可以直接拖动到 `Source Image`。 |
+| **Multiple** | 需要用 `Sprite Editor` 手动裁剪出多个 Sprite，否则不能作为 UI 直接使用。 |
+
+**⚠️ 如果你的 `Sprite Mode` 设为 `Multiple`，但没有在 `Sprite Editor` 里手动裁剪，Unity 可能不会识别它，导致无法拖动到 `Source Image`。**
+
+---
+
+### **`Mesh Type`**
+`Mesh Type` 决定了 **Sprite 渲染时的网格形状**，影响 **性能** 和 **边缘透明度**。
+
+可以选择：
+- **Full Rect**（默认）：使用矩形网格（最简单，但占用更多像素）。
+- **Tight**：Unity 自动生成 **最小包围多边形网格**，减少透明区域，提高性能。
+
+| 选项 | 影响 |
+|------|------|
+| **Full Rect** | UI 或 2D 游戏里，适用于 **矩形精灵**，边缘透明区域会被计算进网格，可能浪费渲染资源。 |
+| **Tight** | 适用于 **不规则形状** 的图片，可以减少透明区域的绘制，提高性能。 |
+
+#### **`Tight`**
+- **如果你的图片有 Alpha 透明**，`Tight` 模式可能会导致透明部分不规则裁剪，影响某些 Shader 效果（例如 Outline 或 Glow）。
+- **如果 Sprite 用作 UI（比如 `Image` 或 `Button`）**，`Full Rect` 更稳定，不会影响点击区域。
+
+---
+
+ **`Sprite Mode`**
+- `Single`：普通 UI 或 2D 纹理使用。
+- `Multiple`：用作 **Sprite Sheet** 时必须开启（否则无法拖入 `Source Image`）。
+  
+ **`Mesh Type`**
+- `Full Rect`：适用于 UI 或者 **矩形 Sprite**，避免不规则网格带来的问题。
+- `Tight`：适用于 **非规则形状**，减少透明区域的渲染，提高性能。

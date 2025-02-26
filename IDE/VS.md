@@ -51,8 +51,8 @@ View change shortcuts:
 
 ## Settings
 - Change font size of Intellisense: Go to `Font -> Statement Completion`.
-- Change font size of window when mouse floats over a variable: Go to `Font -> Editor Tooltip`.
--
+2- Change font size of window when mouse floats over a variable: Go to `Font -> Editor Tooltip`.
+- Change font size of the environment: Go to `Font -> Environment`.
 - AutoComplete settings:  
   - Click on the little button below the Extensions toolbar. It will show "Switch between Intellisense Mode". This disables space for autocomplete, and only uses TAB for autocomplete.  
 - Encoding Settings
