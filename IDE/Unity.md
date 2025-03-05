@@ -16,6 +16,17 @@
 4. - Q: Cannot see Unity.Entities namespace in visual studio
    - A: `Preferences -> External Tools-> Regenerate project files`, reopen vs by double click
 
+5. - Q: xx is missing the class attribute 'ExtensionOfNativeClass'!
+   - A: Find xx.cs script, and then `Right click -> Find reference in scenes -> Delete the old scripts attached to gameobject`
+
+6. - Q : Faster compilation time
+   - A : Change `Project Settings -> Burst AOT Settings -> Optimize for fast compiation`, `Project Settings -> Editor -> Enter Play mode -> reload scene only ` disable `reload domain`
+   - A : Use split assembies
+
+7. - Q : Probuilder meshes warning: [Warning Edit] Renderer on GameObject "IndicatorEnemy" was not converted. The assigned mesh is null or no materials are assigned.
+   - Q : [Error Edit] InvalidOperationException: No sharedMesh assigned to Unity.Physics.MeshCollider on IndicatorEnemy.
+   - A : When using probuilder meshes in prefab, you MUST export the probuilder object into prefab, and use that prefab.
+
         
 # Useful tips
 
@@ -77,6 +88,8 @@
 ``Ctrl + 9``  Lighint View  
 ``Ctrl + 0``  Project Manager View  
 ``Ctrl + U``  Undo History List View  
+
+``G`` Probuilder 6 Toggle Edit mode shortcut
 
 
 

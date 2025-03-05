@@ -38,6 +38,7 @@ View change shortcuts:
 - View error list: `Ctrl + Alt + C`
 - View output window: `Ctrl + Alt + O`
 - View solution explorer: `Ctrl + Alt + L`
+- View unity folder explorer: `Ctrl + Alt + C`
 - View the code coverage window: `Ctrl + E + R`
 - Split Editor Vertically: `Alt + W + V` when you have 2 tabs open
 - Split Editor Horizontally: `Alt + W + H` when you have 2 tabs open

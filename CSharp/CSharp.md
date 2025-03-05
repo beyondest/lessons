@@ -84,7 +84,7 @@ void main(){
 |              | C#            | C++                            | Python       |
 |--------------|---------------|--------------------------------|--------------|
 | Public       | `myVariable`  | `myVariable` / `my_variable`   | `my_variable`|
-| Private      | `m_MyVariable`| `m_MyVariable`                 | `_my_variable`|
+| Private      | `_myVariable` | `m_MyVariable`                 | `_my_variable`|
 | Class        |               | `MyClass`                      |              |
 
 
