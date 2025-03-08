@@ -1,111 +1,18 @@
-using System;
-using UnityEngine;
-using UnityEngine.EventSystems;
-
-public class RTSCameraController : MonoBehaviour
-{
-    public static RTSCameraController instance;
-    Vector3 newPosition;
-    Vector3 dragStartPosition;
-    Vector3 dragCurrentPosition;
-    float movementSpeed;
-
-
-    [SerializeField] Transform cameraTransform;
-    public Transform followTransform;
-
-    [Header("Config")]
-    [SerializeField] float normalSpeed = 0.01f;
-    [SerializeField] float movementSensitivity = 1f;
-    [SerializeField] float edgeSize = 50f;  // Affect the sensitivity of edge scrolling
-
-    private void OnEnable()
-    {
-
-    }
-
-
-
-
-    private void Start()
-    {
-        instance = this;
-        newPosition = transform.position;
-        movementSpeed = normalSpeed;
-    }
-
-    private void Update()
-    {
-        if (GameController.isPaused) return;
-        if (Application.isFocused == false) return;
-
-        if (followTransform != null)
-        {
-            transform.position = followTransform.position;
-        }
-        else
-        {
-            HandleEdgeScrollInput();
-            transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementSensitivity);
-        }
-
-    }
-
-    private void OnMiddleClick( RaycastHit hit)
-    {
-        Plane plane = new Plane(Vector3.up, Vector3.zero);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        float entry;
-        if (plane.Raycast(ray, out entry))
-        {
-            dragStartPosition = ray.GetPoint(entry);
-        }
-    }
-
-    private void OnMiddleClicking( RaycastHit hit)
-    {
-        Plane plane = new Plane(Vector3.up, Vector3.zero);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        float entry;
-        if (plane.Raycast(ray, out entry))
-        {
-            dragCurrentPosition = ray.GetPoint(entry);
-            newPosition = transform.position + dragStartPosition - dragCurrentPosition;
-        }
-    }
-    private void OnMiddleClickUp( RaycastHit hit)
-    {
-        dragStartPosition = Vector3.zero;
-        dragCurrentPosition = Vector3.zero;
-        newPosition = transform.position;
-    }
-
-    private void HandleEdgeScrollInput()
-    {
-        if (Input.mousePosition.y >= Screen.height - edgeSize)
-        {
-            newPosition += (transform.forward * movementSpeed);
-            CursorManager.instance.SetCursor(CursorManager.instance.cursorScrollUp);
-        }
-        else if (Input.mousePosition.y <= edgeSize)
-        {
-            newPosition += (transform.forward * -movementSpeed);
-            CursorManager.instance.SetCursor(CursorManager.instance.cursorScrollDown);
-
-        }
-        else if (Input.mousePosition.x >= Screen.width - edgeSize)
-        {
-            newPosition += (transform.right * movementSpeed);
-            CursorManager.instance.SetCursor(CursorManager.instance.cursorScrollDown);
-        }
-        else if (Input.mousePosition.x <= edgeSize)
-        {
-            newPosition += (transform.right * -movementSpeed);
-            CursorManager.instance.SetCursor(CursorManager.instance.cursorScrollDown);
-        }
-        else
-        {
-            CursorManager.instance.SetCursor(CursorManager.instance.cursorScrollDefault);
-        }
-    }
-}
+[07:12:51:489] Loading Entity Scene failed because the entity header file couldn't be resolved. This might be caused by a failed import of a subscene. Please try to reimport the subscene BootstrapperSubscene from its inspector, look at any errors/exceptions in the console or look at the asset import worker log in D:\WS_Unity\WarOfLightAndShadow\Logs. scenePath=Assets/Scenes/Bootstrapper/BootstrapperSubscene.unity guid=0f7f02d94cd57a145ba51691c3c088ad
+UnityEngine.Debug:LogError (object)
+Unity.Debug:LogError (object) (at ./Library/PackageCache/com.unity.entities/Unity.Entities/Stubs/Unity/Debug.cs:11)
+Unity.Scenes.SceneHeaderUtility:LogHeaderLoadError (Unity.Scenes.SceneHeaderUtility/HeaderLoadStatus,Unity.Entities.Hash128) (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/SceneHeaderUtility.cs:340)
+Unity.Scenes.SceneHeaderUtility:FinishHeaderLoad (Unity.Scenes.RequestSceneHeader,Unity.Entities.Hash128,string) (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/SceneHeaderUtility.cs:143)
+Unity.Scenes.ResolveSceneReferenceSystem/ResolveSceneReferenceSystem_2E14F795_LambdaJob_0_Job:OriginalLambdaBody (Unity.Entities.Entity,Unity.Scenes.RequestSceneHeader&,Unity.Entities.SceneReference&,Unity.Scenes.ResolvedSceneHash&,Unity.Entities.RequestSceneLoaded&) (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/ResolveSceneReferenceSystem.cs:228)
+Unity.Scenes.ResolveSceneReferenceSystem/ResolveSceneReferenceSystem_2E14F795_LambdaJob_0_Job:RunWithStructuralChange (Unity.Entities.EntityQuery) (at ./SystemGenerator/Unity.Entities.SourceGen.SystemGenerator.SystemGenerator/Temp/GeneratedCode/Unity.Scenes/ResolveSceneReferenceSystem__System_3440258920.g.cs:259)
+Unity.Scenes.ResolveSceneReferenceSystem:ResolveSceneReferenceSystem_2E14F795_LambdaJob_0_Execute (bool&) (at ./SystemGenerator/Unity.Entities.SourceGen.SystemGenerator.SystemGenerator/Temp/GeneratedCode/Unity.Scenes/ResolveSceneReferenceSystem__System_3440258920.g.cs:291)
+Unity.Scenes.ResolveSceneReferenceSystem:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/ResolveSceneReferenceSystem.cs:215)
+Unity.Entities.SystemBase:Update () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/SystemBase.cs:418)
+Unity.Entities.ComponentSystemGroup:UpdateAllSystems () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:723)
+Unity.Entities.ComponentSystemGroup:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:681)
+Unity.Entities.SystemBase:Update () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/SystemBase.cs:418)
+Unity.Entities.ComponentSystemGroup:UpdateAllSystems () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:723)
+Unity.Entities.ComponentSystemGroup:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:681)
+Unity.Entities.InitializationSystemGroup:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/DefaultWorld.cs:169)
+Unity.Entities.SystemBase:Update () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/SystemBase.cs:418)
+Unity.Entities.ScriptBehaviourUpdateOrder/DummyDelegateWrapper:TriggerUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ScriptBehaviourUpdateOrder.cs:523)
