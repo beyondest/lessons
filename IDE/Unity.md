@@ -294,3 +294,495 @@ Basic Concepts:
  **`Mesh Type`**
 - `Full Rect`：适用于 UI 或者 **矩形 Sprite**，避免不规则网格带来的问题。
 - `Tight`：适用于 **非规则形状**，减少透明区域的渲染，提高性能。
+
+
+
+# Unity Subscenes
+下面是对这些问题的详细说明和举例说明，引用了 Unity 官方文档中的相关内容。
+
+---
+
+## 1. 关于这句话的含义
+
+> **Important**  
+> Unity doesn't stream the content of opened subscenes. The entities in an open subscene are immediately available when you enter Play mode
+
+这句话的意思是：
+
+- **Opened（打开）的 Subscene**：指在 Editor 中你以“打开”状态显示 subscene（例如在 Hierarchy 中勾选了对应的复选框，使得其中的 GameObject 显示出来）。  
+- 在这种状态下，**Unity 不会对其内容进行“流式加载”**。也就是说，当你点击 Play 时，subscene 内转换后的实体数据（Entities）会立即在场景中可用，不会经过几帧的延迟加载过程。  
+- 与之相对的是 **关闭的 Subscene**：关闭状态下，subscene 的内容是在进入 Play 模式后通过异步流式加载（Streaming）进入的，可能需要几帧时间才能使其实体完全可用。
+
+（参考：citeturn0fetch1）
+
+---
+
+## 2. Subscene 的 AutoLoad Mode 与 Checkbox 的影响
+
+### AutoLoadMode 的作用
+
+- **AutoLoadScene 字段（AutoLoad Mode）**：在 SubScene 组件上有一个 Auto Load Scene 选项。当该选项为 true 时，在运行时（或进入 Play 模式时）Unity 会自动流式加载（stream in）该 subscene 的内容。  
+- 注意：这个字段主要影响 **流式加载** 的行为，也就是说，它决定了在运行时 Unity 是否自动加载该 subscene 的实体数据。
+
+### Checkbox（勾选框）的作用
+
+- Hierarchy 中 subscene 前的复选框**控制的是 subscene 的“打开”状态**。  
+  - **打开（Open）**：显示出 subscene 内的所有 authoring GameObject，方便在 Editor 中编辑。  
+  - **关闭（Closed）**：不在 Hierarchy 中显示具体内容，而是以一个整体的 subscene 形式存在，内容会在运行时通过流式加载进入。
+
+- 因此，**复选框只是影响 subscene 是否以打开状态展示，而不直接决定其是否被加载**。  
+  - 当 subscene 是打开状态时，内容在进入 Play 模式时已经转换好，实体数据会立即可用；  
+  - 当 subscene 是关闭状态时，则会触发流式加载，其内容需要几帧才能完全加载进来。
+
+（参考：citeturn0fetch1）
+
+### Open 与 Load 的区别
+
+- **Open（打开）**：主要描述的是编辑器中的状态。当你“打开”一个 subscene，意味着它的 authoring 数据（GameObject、组件等）显示在 Hierarchy 中，你可以进行修改。这种状态下，进入 Play 模式时，subscene 的实体会马上可用，不需要经过流式加载延迟。
+- **Load（加载）**：指的是运行时将 subscene 内已转换的实体数据流式加载进 ECS 世界的过程。对于关闭状态的 subscene，加载过程是异步的，可能会有几帧延迟。
+
+---
+
+## 3. Subscene 与 Parent Scene 的关系
+
+### Subscene 是否可以脱离 Parent Scene 存在？
+
+- 在 Editor 中，subscene 是作为 Parent Scene 内的一个组件（SubScene 组件）存在的。也就是说，从层级上看，它依附于父场景。
+- 但在运行时，subscene 会被转换成独立的实体场景（Entity Scene），并由 SceneSystem 管理。  
+  - 虽然这种实体场景可以独立进行加载和卸载，但在编辑器中它们还是依赖于父场景的组织方式。
+- **总结**：从编辑器的角度来说，subscene 不能脱离其 parent scene 存在；而在运行时，subscene 的数据流式加载与管理可以看作是独立的，但通常还是与父场景的加载逻辑相关联。
+
+### Parent Scene 加载是否会加载其中的 Subscene？
+
+- **自动加载**：如果 SubScene 组件的 AutoLoadScene 为 true，当父场景加载且 SubScene 组件启用时，Unity 会自动对该 subscene 进行流式加载或（如果是打开状态）立即提供其实体数据。  
+- **组织方式**：通常情况下，当你加载一个包含 SubScene 的父场景时，相关的 subscene 也会被加载（按照它们各自的设置）。在构建后的游戏中，subscene 都会以关闭状态存在，因而需要经过流式加载过程。
+
+（参考：citeturn0fetch1 以及 citeturn0fetch2）
+
+---
+
+## 4. 合理的 ECS RTS 游戏中的 Scene 结构示例
+
+在一个基于 ECS 的 RTS（即时战略）游戏中，为了兼顾性能、开发效率以及资源管理，你可以考虑以下场景组织结构：
+
+### 主场景（传统 Scene）
+
+- **主要用途**：存放全局系统、游戏管理器、UI、持久化数据以及全局逻辑。
+- **示例内容**：
+  - 游戏管理器（Game Manager）、网络管理、音频管理。
+  - UI 界面、摄像机控制、玩家数据。
+  - 持续运行的 ECS 系统（例如单位管理、资源管理等）。
+- **作用**：作为整个游戏的“容器”，管理游戏的生命周期和全局状态。
+
+### Subscene 的组织与分配
+
+在主场景中，通过 SubScene 组件引用多个子场景，这些 subscene 用来管理大批量数据，减少单个 authoring 场景内容过多导致的编辑器卡顿，并利用 ECS 的流式加载优势。
+
+#### 举例说明
+
+1. **地图与环境数据 Subscene**  
+   - **内容**：地形、植被、环境装饰、障碍物等静态数据。  
+   - **原因**：这些数据体积较大但一般不会频繁修改，适合在编辑器中单独管理，同时在运行时以流式加载方式进入 ECS 世界。  
+   - **组织**：一个大的父场景中可以包含多个地图区域的 subscene，每个 subscene 对应地图中的一块区域，便于根据玩家视野进行动态加载和卸载。
+
+2. **单位与建筑物数据 Subscene**  
+   - **内容**：各个玩家单位、建筑、兵营、资源采集点等。  
+   - **原因**：这些数据在游戏中频繁交互，但通常通过 ECS 组件来处理其行为，因此在运行时转换为实体数据后可以高效管理。  
+   - **组织**：可以将各个阵营的单位放入不同的 subscene，或者根据战场区域进行分割，方便针对不同区域进行流式加载。
+
+3. **动态特效与临时数据**  
+   - **内容**：爆炸、烟雾、粒子特效等。  
+   - **原因**：这些内容通常不需要事先通过 SubScene 进行静态烘焙，可以直接通过运行时系统创建和销毁，放在主场景中由专门的特效管理系统处理。
+   - **组织**：建议放在主场景或单独的“特效管理”子场景中，但由于其临时性，不需要流式加载。
+
+### 整体结构示例
+
+- **主场景（Game Core Scene）**
+  - 全局管理器、UI、主摄像机、运行时系统（例如 AI、物理、网络同步等）
+  - **Subscene 1：地图区域 A**  
+    - 地形、环境、植被、障碍物  
+    - 依据玩家视角动态加载/卸载  
+  - **Subscene 2：地图区域 B**  
+    - 同上，另一块区域
+  - **Subscene 3：单位与建筑数据（阵营 A）**  
+    - 包含阵营 A 的所有建筑、单位等  
+  - **Subscene 4：单位与建筑数据（阵营 B）**  
+    - 包含阵营 B 的所有建筑、单位等  
+  - **主场景中的其他 GameObject**：用于即时生成特效、UI 等
+
+这种结构的好处是：
+- **分离静态数据与动态数据**：静态环境和建筑数据放在 subscene 中，便于进行异步流式加载；动态产生的特效和交互逻辑放在主场景中，便于实时控制。  
+- **分区域管理**：通过不同区域的 subscene，可以实现按需加载（Streaming），降低内存压力和提升性能。  
+- **开发协作**：艺术家可以在各自的 subscene 中独立工作，而程序员则专注于全局系统和动态逻辑，减少相互干扰。
+
+（参考：citeturn0fetch2 和官方关于 Subscene 与 Scene 概览的说明）
+
+---
+
+## 总结
+
+- **“Opened subscene” 与 “Closed subscene” 的区别**：打开状态下（勾选复选框）的 subscene，其实体数据在进入 Play 模式时会立刻可用，而关闭状态下则需要异步流式加载。  
+- **AutoLoadScene 与复选框**：AutoLoadScene 决定了 SubScene 组件在启用时是否自动加载对应的 entity scene，而复选框仅影响编辑器中是否显示子场景的 authoring 数据。  
+- **Open 与 Load 的区别**：Open 是编辑器中的可视化与编辑状态；Load 指的是运行时将数据加载到 ECS 世界中的过程。  
+- **Subscene 与 Parent Scene 的关系**：在编辑器中，subscene 依附于父场景；在运行时，它们的实体数据可以独立加载，但通常作为父场景的一部分管理。  
+- **合理的 ECS RTS 游戏场景结构**：主场景负责全局逻辑与系统，而各个 subscene 根据区域、阵营或数据类型划分，分别管理环境、建筑、单位等内容，通过流式加载实现性能优化和动态管理。
+
+希望以上说明能帮助你更好地理解 Unity ECS 中 Subscene 的加载机制及其在大型 RTS 游戏中的应用实践！
+
+
+
+
+# Burst Compile compatible
+### **1. `EntityQuery` 是否兼容 `BurstCompile`？**  
+✅ **`EntityQuery` 是 `Burst` 兼容的，可以安全地作为 `ISystem` 的私有变量**，但它需要在 `OnCreate()` 里正确初始化，并且在 `OnUpdate()` 里使用时遵循一定的规则。
+
+---
+
+### **2. `EntityQuery` 在 `OnCreate()` 里获取后是固定的吗？**
+- **是的，它的结构是固定的**（查询的组件类型不会变），但查询的**结果**（匹配的实体）是动态的，会随着 ECS 世界的变化而变化。
+- **换句话说**：
+  - **`EntityQuery` 本身不会变**，你不需要每帧重新创建它。
+  - **它查询到的实体集合会变**，因为 ECS 世界中的实体会被创建/销毁/修改。
+
+---
+
+### **3. 正确的 `EntityQuery` 使用方式**
+✅ **推荐的 `ISystem` 实现**
+```csharp
+[BurstCompile]
+public partial struct MySystem : ISystem
+{
+    private EntityQuery entityQuery; // ✅ 兼容 Burst，可以安全存储
+
+    [BurstCompile]
+    public void OnCreate(ref SystemState state)
+    {
+        entityQuery = SystemAPI.QueryBuilder()
+            .WithAll<Translation, Rotation>() // 只查询拥有 Translation 和 Rotation 组件的实体
+            .WithNone<Disabled>() // 排除 Disabled 组件的实体
+            .Build();
+    }
+
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state)
+    {
+        NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp);
+        
+        for (int i = 0; i < entities.Length; i++)
+        {
+            Entity entity = entities[i];
+            // 对实体进行处理
+        }
+
+        entities.Dispose(); // 释放 NativeArray
+    }
+}
+```
+
+---
+
+### **4. `EntityQuery` 的一些关键点**
+| **问题** | **解答** |
+|----------|---------|
+| **在 `OnCreate()` 里获取 `EntityQuery`，是不是固定的？** | ✅ **是的**，它不会变，但查询到的**实体**会变 |
+| **`EntityQuery` 需要手动更新吗？** | ❌ **不需要**，它会自动适应 ECS 世界的变化 |
+| **可以在 `BurstCompile` 的代码里用 `EntityQuery` 吗？** | ✅ **可以** |
+| **`EntityQuery` 里可以获取哪些数据？** | ✅ **实体列表** (`ToEntityArray()`)、✅ **组件数据** (`ToComponentDataArray<T>()`)、✅ **统计数量** (`CalculateEntityCount()`) |
+
+---
+
+### **5. `EntityQuery` 常见的错误**
+🚨 **错误 1：每帧重新创建 `EntityQuery`**
+```csharp
+[BurstCompile]
+public partial struct MySystem : ISystem
+{
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state)
+    {
+        // 🚨 每帧创建 EntityQuery，性能浪费
+        var query = SystemAPI.QueryBuilder()
+            .WithAll<Translation>()
+            .Build();
+
+        int count = query.CalculateEntityCount();
+    }
+}
+```
+❌ **问题**：
+- `EntityQuery` 是可以存储的，**不需要每帧重新创建**，否则会导致 **GC 压力** 和 **不必要的查询开销**。
+
+✅ **正确方式：在 `OnCreate()` 里创建，`OnUpdate()` 里使用**
+```csharp
+private EntityQuery entityQuery;
+
+[BurstCompile]
+public void OnCreate(ref SystemState state)
+{
+    entityQuery = SystemAPI.QueryBuilder()
+        .WithAll<Translation>()
+        .Build();
+}
+
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    int count = entityQuery.CalculateEntityCount(); // ✅ 这样才是高效的
+}
+```
+
+---
+
+🚨 **错误 2：错误使用 `entityQuery.ToEntityArray()`**
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    var entities = entityQuery.ToEntityArray(Allocator.Persistent); // 🚨 错误：不应该用 Persistent
+    entities.Dispose(); // 如果忘了 Dispose()，就会造成内存泄漏！
+}
+```
+❌ **问题**：
+- `ToEntityArray()` 会分配内存，**但一般不应该使用 `Allocator.Persistent`**，因为你只会在当前帧使用这个数据。
+- **必须 `Dispose()`，否则会内存泄漏！**
+
+✅ **正确方式**
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp);
+    
+    for (int i = 0; i < entities.Length; i++)
+    {
+        Entity entity = entities[i];
+        // 处理实体
+    }
+
+    entities.Dispose(); // ✅ 释放内存
+}
+```
+---
+
+🚨 **错误 3：在 `BurstCompile` 代码里直接使用 `state.EntityManager`**
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    EntityManager entityManager = state.EntityManager; // 🚨 `EntityManager` 不是 Burst 兼容的！
+    entityManager.DestroyEntity(entityQuery);
+}
+```
+❌ **问题**：
+- `EntityManager` 不是 `Burst` 兼容的，**不能直接在 `BurstCompile` 方法里使用**。
+- 解决方案是使用 **`EntityCommandBuffer` (ECB)** 来处理实体操作。
+
+✅ **正确方式：使用 `EntityCommandBuffer`**
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    var ecb = new EntityCommandBuffer(Allocator.TempJob);
+    
+    NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp);
+    for (int i = 0; i < entities.Length; i++)
+    {
+        ecb.DestroyEntity(entities[i]);
+    }
+
+    ecb.Playback(state.EntityManager);
+    ecb.Dispose();
+    entities.Dispose();
+}
+```
+
+---
+
+### **6. 总结**
+✅ `EntityQuery` **可以作为 `ISystem` 的私有变量，并且完全兼容 `BurstCompile`**。  
+✅ 在 **`OnCreate()` 里创建**，然后在 **`OnUpdate()` 里使用**，不会影响性能。  
+✅ `EntityQuery` **不会变，但查询到的实体会动态更新**，不需要每帧重新创建。  
+✅ **查询实体时，使用 `ToEntityArray(Allocator.Temp)`**，避免内存泄漏。  
+✅ **修改实体时，使用 `EntityCommandBuffer`，不要直接使用 `EntityManager`**。  
+
+你现在的 `EntityQuery` 是要用来做什么的？是查询哪些实体？我可以帮你优化代码！ 🚀
+
+
+# Allocator
+## **Allocator 详解（与 C++ `new/delete`、`malloc/free` 的对比）**
+在 Unity DOTS（ECS 和 Burst）中，`Allocator` 是用于 **管理 `NativeArray<T>` 等原生容器的内存分配策略**。它与 C/C++ 中的 `malloc/free`、`new/delete` 类似，但提供了更精确的 **生命周期管理** 和 **多线程安全支持**。
+
+---
+
+## **1. `Allocator` 的基本原理**
+在 C++/C 中：
+- `malloc/free` 是手动分配和释放堆内存，不调用构造函数和析构函数（低级）。
+- `new/delete` 进行堆内存分配，同时调用构造函数和析构函数（高级）。
+- **问题**：容易出现 **内存泄漏**（忘记 `free/delete`）、**碎片化**（频繁分配释放导致堆内存混乱）等问题。
+
+在 Unity **ECS/DOTS** 里：
+- `Allocator` 提供了 **更清晰的生命周期管理**，减少手动释放的负担。
+- **不使用 GC（垃圾回收）**，提高性能，适合高频计算（如 AI、物理、路径寻路等）。
+- Unity 内存管理采用 **Job System** 和 **Burst Compiler**，支持多线程访问 **（C++ `std::vector` 之类的东西无法安全地跨线程）**。
+
+---
+
+## **2. `Allocator` 的不同选项**
+| Allocator 选项 | **C/C++ 对应的概念** | **特点** | **适用场景** |
+|---------------|------------------|---------|-------------|
+| `Allocator.Temp` | **`malloc/free`（短时）** | **超快但仅限当前帧，不能跨帧** | **只在当前 `OnUpdate()` 里用，计算完立刻释放** |
+| `Allocator.TempJob` | **线程局部 `malloc/free`** | **支持 Job System，最多 4 帧后自动释放** | **Burst Job 或多线程任务** |
+| `Allocator.Persistent` | **`new/delete`（长期分配）** | **手动管理生命周期，不自动释放** | **需要长期保存数据，如 ECS 组件数据** |
+
+---
+
+## **3. 详细分析 `Allocator.Temp`**
+```csharp
+NativeArray<float3> positions = new NativeArray<float3>(100, Allocator.Temp);
+```
+**特点：**
+- **非常快**，但**只能在当前帧使用**（不能存储到 `ISystem` 里）。
+- **自动释放**，**不需要手动 `Dispose()`**，但如果 `Dispose()` 了也不会报错。
+- **不支持 Job System**（不能在 `Burst Job` 里使用）。
+  
+**C++ 对比：**
+```cpp
+float* data = (float*)malloc(100 * sizeof(float)); // 临时分配
+// 使用 data...
+free(data); // 手动释放
+```
+- `Allocator.Temp` 本质上类似 **短生命周期的 `malloc/free`**，但在 Unity 里 **自动管理**，不需要 `free`。
+
+**⚠️ 限制：**
+- **不能跨帧**（如果你尝试在 `OnCreate()` 里分配 `Temp`，然后 `OnUpdate()` 里用它，会出错）。
+- **适用于临时计算，比如路径寻路、查询等**。
+
+**✅ 适用场景**
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    NativeArray<Entity> entities = entityQuery.ToEntityArray(Allocator.Temp); // ✅ 只在当前帧使用
+    entities.Dispose(); // ✅ 释放（虽然 Temp 会自动释放，但最好手动 Dispose）
+}
+```
+---
+
+## **4. 详细分析 `Allocator.TempJob`**
+```csharp
+NativeArray<float3> positions = new NativeArray<float3>(100, Allocator.TempJob);
+```
+**特点：**
+- **支持 Job System**（可以在 `Burst Job` 里用）。
+- **自动释放（4 帧后）**，但 **最好手动 `Dispose()`**。
+- **比 `Temp` 稍慢，但仍然是短期存储**。
+
+**C++ 对比：**
+```cpp
+thread_local float* data = (float*)malloc(100 * sizeof(float)); // 线程局部存储
+// 计算任务
+free(data); // 释放
+```
+- `TempJob` 允许 **跨帧使用（最多 4 帧）**，适用于 **短期 Job 计算**。
+
+**⚠️ 限制：**
+- **不能用于长期存储数据**，否则 **Unity 会报错**（"TempJob allocation is too old"）。
+- **适用于 Job System 的数据传递**。
+
+**✅ 适用场景**
+```csharp
+[BurstCompile]
+public void OnUpdate(ref SystemState state)
+{
+    NativeArray<float3> positions = new NativeArray<float3>(100, Allocator.TempJob);
+    var job = new SomeJob { Positions = positions };
+    job.Schedule().Complete();
+    positions.Dispose(); // ✅ 必须手动释放
+}
+```
+---
+
+## **5. 详细分析 `Allocator.Persistent`**
+```csharp
+NativeArray<float3> positions = new NativeArray<float3>(100, Allocator.Persistent);
+```
+**特点：**
+- **手动管理内存**，不会自动释放（需要手动 `Dispose()`）。
+- **适用于长期存储**，比如 ECS 组件数据、长期缓存的数据。
+
+**C++ 对比：**
+```cpp
+float* data = new float[100]; // 长期存储
+delete[] data; // 必须手动释放
+```
+- **Persistent 适用于游戏生命周期内的长期数据**。
+
+**⚠️ 限制：**
+- **如果忘记 `Dispose()`，就会导致内存泄漏**！
+- **适用于 ECS 组件数据、长期缓存的数据**。
+
+**✅ 适用场景**
+```csharp
+public void OnCreate(ref SystemState state)
+{
+    NativeArray<float3> positions = new NativeArray<float3>(100, Allocator.Persistent);
+}
+
+public void OnDestroy(ref SystemState state)
+{
+    if (positions.IsCreated) positions.Dispose(); // ✅ 释放内存
+}
+```
+---
+
+## **6. 总结：`Allocator` 选项对比**
+| Allocator | **C++ 对应** | **特点** | **适用场景** |
+|-----------|-------------|---------|-------------|
+| `Allocator.Temp` | `malloc/free`（短期） | **超快，但只能在当前帧用** | **临时计算（如 `ToEntityArray()`）** |
+| `Allocator.TempJob` | 线程局部 `malloc/free` | **支持 Job System，最多 4 帧** | **Burst Job 计算（如物理模拟）** |
+| `Allocator.Persistent` | `new/delete`（长期） | **手动释放，长期存储** | **ECS 组件数据、长期缓存** |
+
+---
+
+## **7. `Allocator` 常见错误**
+### **🚨 1. 使用 `Temp` 试图跨帧**
+```csharp
+private NativeArray<float3> positions;
+
+public void OnCreate(ref SystemState state)
+{
+    positions = new NativeArray<float3>(100, Allocator.Temp); // 🚨 错误
+}
+public void OnUpdate(ref SystemState state)
+{
+    positions[0] = new float3(1, 1, 1); // 🚨 运行时报错："Temp allocation cannot persist beyond one frame"
+}
+```
+✅ **修正：改用 `Persistent`**
+```csharp
+positions = new NativeArray<float3>(100, Allocator.Persistent);
+```
+---
+
+### **🚨 2. `TempJob` 忘记释放**
+```csharp
+public void OnUpdate(ref SystemState state)
+{
+    NativeArray<float3> positions = new NativeArray<float3>(100, Allocator.TempJob);
+    var job = new SomeJob { Positions = positions };
+    job.Schedule().Complete();
+    // 🚨 忘记 Dispose()，会导致内存泄漏
+}
+```
+✅ **修正：手动释放**
+```csharp
+positions.Dispose();
+```
+---
+
+## **8. 结论**
+- **`Temp`** → **超快但仅限当前帧**（像 `malloc/free`）
+- **`TempJob`** → **支持 Job System，最多 4 帧**（适合短期 Job 计算）
+- **`Persistent`** → **长期存储，手动释放**（类似 `new/delete`）
+
+如果你的数据需要 **长期存储**，用 `Persistent`。如果只在当前帧内计算，**用 `Temp` 或 `TempJob`**。 🚀
