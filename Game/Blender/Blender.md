@@ -63,6 +63,8 @@
 - `Ctrl + L` : Link materials of one object to others selected. Notice that the mother object has to be selected last.
 - `Ctrl + A` : Apply, after changing the size of object, you need to apply the scale to make that remain 1.
 - `M` : Add to new collection
+- `Home button` : Auto zoom and focus
+- `Numpad .` : Auto zoom and focus only on selected object
 
 # Unknown Name
 

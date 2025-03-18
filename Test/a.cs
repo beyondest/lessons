@@ -1,18 +1,419 @@
-[07:12:51:489] Loading Entity Scene failed because the entity header file couldn't be resolved. This might be caused by a failed import of a subscene. Please try to reimport the subscene BootstrapperSubscene from its inspector, look at any errors/exceptions in the console or look at the asset import worker log in D:\WS_Unity\WarOfLightAndShadow\Logs. scenePath=Assets/Scenes/Bootstrapper/BootstrapperSubscene.unity guid=0f7f02d94cd57a145ba51691c3c088ad
-UnityEngine.Debug:LogError (object)
-Unity.Debug:LogError (object) (at ./Library/PackageCache/com.unity.entities/Unity.Entities/Stubs/Unity/Debug.cs:11)
-Unity.Scenes.SceneHeaderUtility:LogHeaderLoadError (Unity.Scenes.SceneHeaderUtility/HeaderLoadStatus,Unity.Entities.Hash128) (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/SceneHeaderUtility.cs:340)
-Unity.Scenes.SceneHeaderUtility:FinishHeaderLoad (Unity.Scenes.RequestSceneHeader,Unity.Entities.Hash128,string) (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/SceneHeaderUtility.cs:143)
-Unity.Scenes.ResolveSceneReferenceSystem/ResolveSceneReferenceSystem_2E14F795_LambdaJob_0_Job:OriginalLambdaBody (Unity.Entities.Entity,Unity.Scenes.RequestSceneHeader&,Unity.Entities.SceneReference&,Unity.Scenes.ResolvedSceneHash&,Unity.Entities.RequestSceneLoaded&) (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/ResolveSceneReferenceSystem.cs:228)
-Unity.Scenes.ResolveSceneReferenceSystem/ResolveSceneReferenceSystem_2E14F795_LambdaJob_0_Job:RunWithStructuralChange (Unity.Entities.EntityQuery) (at ./SystemGenerator/Unity.Entities.SourceGen.SystemGenerator.SystemGenerator/Temp/GeneratedCode/Unity.Scenes/ResolveSceneReferenceSystem__System_3440258920.g.cs:259)
-Unity.Scenes.ResolveSceneReferenceSystem:ResolveSceneReferenceSystem_2E14F795_LambdaJob_0_Execute (bool&) (at ./SystemGenerator/Unity.Entities.SourceGen.SystemGenerator.SystemGenerator/Temp/GeneratedCode/Unity.Scenes/ResolveSceneReferenceSystem__System_3440258920.g.cs:291)
-Unity.Scenes.ResolveSceneReferenceSystem:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Scenes/ResolveSceneReferenceSystem.cs:215)
-Unity.Entities.SystemBase:Update () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/SystemBase.cs:418)
-Unity.Entities.ComponentSystemGroup:UpdateAllSystems () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:723)
-Unity.Entities.ComponentSystemGroup:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:681)
-Unity.Entities.SystemBase:Update () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/SystemBase.cs:418)
-Unity.Entities.ComponentSystemGroup:UpdateAllSystems () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:723)
-Unity.Entities.ComponentSystemGroup:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ComponentSystemGroup.cs:681)
-Unity.Entities.InitializationSystemGroup:OnUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/DefaultWorld.cs:169)
-Unity.Entities.SystemBase:Update () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/SystemBase.cs:418)
-Unity.Entities.ScriptBehaviourUpdateOrder/DummyDelegateWrapper:TriggerUpdate () (at ./Library/PackageCache/com.unity.entities/Unity.Entities/ScriptBehaviourUpdateOrder.cs:523)
+using SparFlame.GamePlaySystem.General;
+using Unity.Entities;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Mathematics;
+using Unity.Transforms;
+using System.Runtime.CompilerServices;
+using Unity.Physics;
+using UnityEngine;
+
+// ReSharper disable UseIndexFromEndExpression
+
+
+namespace SparFlame.GamePlaySystem.Movement
+{
+    // [BurstCompile]
+    public partial struct MovementSystem : ISystem
+    {
+        private BufferLookup<WaypointBuffer> _waypointLookup;
+        private ComponentLookup<MovableData> _movableLookup;
+        private ComponentLookup<BasicAttr> _basicAttrLookup;
+
+        [BurstCompile]
+        public void OnCreate(ref SystemState state)
+        {
+            state.RequireForUpdate<PhysicsWorldSingleton>();
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
+            state.RequireForUpdate<NotPauseTag>();
+            state.RequireForUpdate<MovementConfig>();
+            _waypointLookup = state.GetBufferLookup<WaypointBuffer>(true);
+            _movableLookup = state.GetComponentLookup<MovableData>();
+            _basicAttrLookup = state.GetComponentLookup<BasicAttr>(true);
+        }
+
+        // [BurstCompile]
+        public void OnUpdate(ref SystemState state)
+        {
+            var config = SystemAPI.GetSingleton<MovementConfig>();
+            var physicsWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>();
+            _waypointLookup.Update(ref state);
+            _movableLookup.Update(ref state);
+            _basicAttrLookup.Update(ref state);
+            // PathCalculated is set to true only if calculation is done successfully
+            new MoveJob
+            {
+                PhysicsWorld = physicsWorld,
+                WayPointsLookup = _waypointLookup,
+                MovableLookup = _movableLookup,
+                BasicAttrLookup = _basicAttrLookup,
+                DeltaTime = SystemAPI.Time.DeltaTime,
+                WayPointDistanceSq = config.WayPointDistanceSq,
+                MarchExtent = config.MarchExtent,
+                RotationSpeed = config.RotationSpeed,
+                ClickableLayerMask = config.ClickableLayerMask,
+                MovementRayBelongsToLayerMask = config.MovementRayBelongsToLayerMask,
+            }.ScheduleParallel();
+        }
+    }
+
+
+    /// <summary>
+    /// Move the movable entity to their target. According to the movement command type, will execute different logic
+    /// </summary>
+    // [BurstCompile]
+    [WithAll(typeof(HaveTarget))]
+    public partial struct MoveJob : IJobEntity
+    {
+        [ReadOnly] public PhysicsWorldSingleton PhysicsWorld;
+        [ReadOnly] public BufferLookup<WaypointBuffer> WayPointsLookup;
+        [NativeDisableParallelForRestriction]
+        public ComponentLookup<MovableData> MovableLookup;
+        [ReadOnly] public ComponentLookup<BasicAttr> BasicAttrLookup;
+        [ReadOnly] public float DeltaTime;
+        [ReadOnly] public float WayPointDistanceSq;
+        [ReadOnly] public float MarchExtent;
+        [ReadOnly] public float RotationSpeed;
+        [ReadOnly] public uint ClickableLayerMask;
+        [ReadOnly] public uint MovementRayBelongsToLayerMask;
+
+        private void Execute(
+            ref NavAgentComponent navAgent, ref LocalTransform transform, in PhysicsCollider collider,
+            Entity entity)
+        { 
+            var refMoveRW = MovableLookup.GetRefRW(entity);
+            var movableData = refMoveRW.ValueRW;
+            navAgent.TargetPosition = new float3(movableData.TargetCenterPos.x, 0f, movableData.TargetCenterPos.z);
+            var targetCenterPos2D = new float2(movableData.TargetCenterPos.x, movableData.TargetCenterPos.z);
+            var curPos2D = new float2(transform.Position.x, transform.Position.z);
+            var curPos = new float3(transform.Position.x, 0f, transform.Position.z);
+            var interactiveRangeSq = movableData.InteractiveRangeSq;
+            var shouldMove = false;
+            //navAgent.EnableCalculation = true;
+            // This line should always be false, cause agent has buffer 
+            if (!WayPointsLookup.TryGetBuffer(entity, out var waypointBuffer)) return;
+
+            switch (movableData.MovementCommandType)
+            {
+                // If Interactive movement
+                case MovementCommandType.Interactive:
+                {
+                    navAgent.Extents = new float3
+                    {
+                        x = movableData.TargetColliderShapeXZ.x,
+                        y = 1f,
+                        z = movableData.TargetColliderShapeXZ.y
+                    };
+                    var curDisSqPointToRect =
+                        DistanceSqPointToRect(targetCenterPos2D, movableData.TargetColliderShapeXZ, curPos2D);
+                    // Current pos in Interactive range. This should be checked before the last waypoint,
+                    // cause interactive movement DO NOT NEED or SHOULD NOT reach the last waypoint
+                    if (curDisSqPointToRect < interactiveRangeSq)
+                    {
+                        movableData.MovementState = MovementState.MovementComplete;
+                        movableData.DetailInfo = DetailInfo.None;
+                        navAgent.EnableCalculation = false;
+                        navAgent.CalculationComplete = false;
+                        movableData.MovementCommandType = MovementCommandType.None;
+                    }
+                    // Current pos not in Interactive range
+                    else
+                    {
+                        // Enable Calculation
+                        navAgent.EnableCalculation = true;
+                        if (movableData.ForceCalculate)
+                        {
+                            navAgent.ForceCalculate = true;
+                            movableData.ForceCalculate = false;
+                        }
+
+                        // Calculation Complete
+                        if (navAgent.CalculationComplete)
+                        {
+                            // Calculate if target reachable
+                            var endPos2D = new float2(waypointBuffer[waypointBuffer.Length - 1].WayPoint.x,
+                                waypointBuffer[waypointBuffer.Length - 1].WayPoint.z);
+                            var endDisSqPointToRect = DistanceSqPointToRect(targetCenterPos2D,
+                                movableData.TargetColliderShapeXZ, endPos2D);
+                            movableData.DetailInfo = endDisSqPointToRect < interactiveRangeSq
+                                ? DetailInfo.Reachable
+                                : DetailInfo.NotReachable;
+                            // If reach the last waypoint. Not using the index because moving takes time,
+                            // Even if the index is the last one, the object may not reach the last waypoint yet
+                            if (math.distancesq(endPos2D, curPos2D) < WayPointDistanceSq)
+                            {
+                                movableData.MovementState = movableData.DetailInfo == DetailInfo.Reachable
+                                    ? MovementState.MovementComplete
+                                    : MovementState.MovementPartialComplete;
+                                navAgent.EnableCalculation = false;
+                                navAgent.CalculationComplete = false;
+                                movableData.MovementCommandType = MovementCommandType.None;
+                            }
+                            // Not reach the last waypoint. Try moving
+                            else
+                            {
+                                if (navAgent.CurrentWaypoint + 1 < waypointBuffer.Length &&
+                                    math.distancesq(waypointBuffer[navAgent.CurrentWaypoint].WayPoint, curPos) <
+                                    WayPointDistanceSq)
+                                {
+                                    navAgent.CurrentWaypoint += 1;
+                                }
+
+                                movableData.MovementState = MovementState.IsMoving;
+                                shouldMove = true;
+                            }
+                        }
+                        // Calculation Not Complete
+                        else
+                        {
+                            movableData.MovementState = MovementState.NotMoving;
+                            movableData.DetailInfo = DetailInfo.CalculationNotComplete;
+                        }
+                    }
+
+                    break;
+                }
+                // If march movement. Target position should be void
+                case MovementCommandType.March:
+                {
+                    navAgent.Extents = new float3(MarchExtent, 1f, MarchExtent);
+                    // March already arrived
+                    if (math.distancesq(targetCenterPos2D, curPos2D) < WayPointDistanceSq)
+                    {
+                        movableData.MovementState = MovementState.MovementComplete;
+                        movableData.DetailInfo = DetailInfo.None;
+                        navAgent.EnableCalculation = false;
+                        navAgent.CalculationComplete = false;
+                        movableData.MovementCommandType = MovementCommandType.None;
+                    }
+                    // March not arrived yet
+                    else
+                    {
+                        // Enable Calculation
+                        navAgent.EnableCalculation = true;
+                        if (movableData.ForceCalculate)
+                        {
+                            navAgent.ForceCalculate = true;
+                            movableData.ForceCalculate = false;
+                        }
+
+                        // Calculation complete
+                        if (navAgent.CalculationComplete)
+                        {
+                            // Calculate if target reachable
+                            var endPos2D = new float2(waypointBuffer[waypointBuffer.Length - 1].WayPoint.x,
+                                waypointBuffer[waypointBuffer.Length - 1].WayPoint.z);
+                            var endDisToTarget = math.distancesq(targetCenterPos2D, endPos2D);
+                            movableData.DetailInfo = endDisToTarget < WayPointDistanceSq
+                                ? DetailInfo.Reachable
+                                : DetailInfo.NotReachable;
+                            // If reach the last waypoint. Not using the index because moving takes time,
+                            // Even if the index is the last one, the object may not reach the last waypoint yet
+                            if (math.distancesq(endPos2D, curPos2D) < WayPointDistanceSq)
+                            {
+                                movableData.MovementState = movableData.DetailInfo == DetailInfo.Reachable
+                                    ? MovementState.MovementComplete
+                                    : MovementState.MovementPartialComplete;
+                                navAgent.EnableCalculation = false;
+                                navAgent.CalculationComplete = false;
+                                movableData.MovementCommandType = MovementCommandType.None;
+                            }
+                            // Not reach the last waypoint. Try moving
+                            else
+                            {
+                                if (navAgent.CurrentWaypoint + 1 < waypointBuffer.Length &&
+                                    math.distancesq(waypointBuffer[navAgent.CurrentWaypoint].WayPoint, curPos) <
+                                    WayPointDistanceSq)
+                                {
+                                    navAgent.CurrentWaypoint += 1;
+                                }
+
+                                movableData.MovementState = MovementState.IsMoving;
+                                shouldMove = true;
+                            }
+                        }
+                        // Calculation Not Complete
+                        else
+                        {
+                            movableData.MovementState = MovementState.NotMoving;
+                            movableData.DetailInfo = DetailInfo.CalculationNotComplete;
+                        }
+                    }
+
+                    break;
+                }
+                // No command
+                case MovementCommandType.None:
+                {
+                    break;
+                }
+                default:
+                    return;
+            }
+
+            if (!shouldMove) return;
+            var movePos = waypointBuffer[navAgent.CurrentWaypoint].WayPoint;
+            // Move Target towards waypoint
+            var direction = movePos - curPos;
+            // This line is crucial because math.normalize will return NAN sometimes without this line
+            if(math.length(direction) < 0.1f)return;
+            // var angle = math.degrees(math.atan2(direction.z, direction.x));
+            // transform.Rotation = math.slerp(
+            //     transform.Rotation,
+            //     quaternion.Euler(new float3(0, angle, 0)),
+            //     DeltaTime);
+            var targetRotation = quaternion.LookRotationSafe(-direction, math.up());
+            transform.Rotation = math.slerp(transform.Rotation.value, targetRotation, DeltaTime * RotationSpeed );
+            
+            transform.Position +=
+                math.normalize(direction) * DeltaTime * movableData.MoveSpeed;
+            // Both front, left, right has an obstacle, and current waypoint not arrived, then TryMove will return false
+            // var moveSuccess = TryMove(ref transform, ref movableData, ref PhysicsWorld, navAgent, movePos, curPos,
+            //     DeltaTime,
+            //     RotationSpeed,
+            //     ClickableLayerMask, MovementRayBelongsToLayerMask, out var frontObstacleEntity);
+            // Debug.Log($"transform {transform.Position}");
+            // if (!moveSuccess)
+            // {
+            //     var basicAttr = BasicAttrLookup[frontObstacleEntity];
+            //     // when focus attack move on a target, while another enemy is on the way, will go into this situation
+            //     // if (basicAttr.FactionTag == FactionTag.Enemy)
+            //     // {
+            //     //     movableData.OnTheWayTargetEntity = frontObstacleEntity;
+            //     //     movableData.MovementState = MovementState.MovementPartialComplete;
+            //     //     navAgent.EnableCalculation = false;
+            //     //     navAgent.CalculationComplete = false;
+            //     //     movableData.MovementCommandType = MovementCommandType.None;
+            //     //     return;
+            //     // }
+            //     var frontMovable = MovableLookup[frontObstacleEntity];
+            //     
+            //     // if (frontMovable.MovementState == MovementState.IsMoving || frontMovable.MovementState == MovementState.NotMoving) return;
+            //     // // When is blocked by not moving ally, should transfer the state
+            //     // movableData.MovementState = frontMovable.MovementState;
+            //     // navAgent.EnableCalculation = false;
+            //     // navAgent.CalculationComplete = false;
+            //     // movableData.MovementCommandType = MovementCommandType.None;
+            // }
+        }
+        // [BurstCompile]
+        private static bool TryMove(ref LocalTransform transform, ref MovableData movableData,
+            ref PhysicsWorldSingleton physicsWorld,
+            in NavAgentComponent navAgent,
+            in float3 movePos, in float3 curPos, in float deltaTime,
+            in float rotationSpeed,
+            uint clickableLayerMask,
+            uint movementRayBelongsToLayerMask,
+            out Entity frontObstacleEntity
+        )
+        {
+            // Move Target towards waypoint
+            var direction = movePos - curPos;
+            var shouldRecalculate = false;
+            // This line is crucial because math.normalize will return NAN sometimes without this line
+            if (math.length(direction) < 0.1f)
+            {
+                frontObstacleEntity = Entity.Null;
+                return true;
+            }
+
+            direction = math.normalize(direction);
+            var moveDelta = deltaTime * movableData.MoveSpeed;
+            // Check front, left, right direction, if there are obstacles in three directions, return false
+            // if (ObstacleInDirection(ref physicsWorld, movableData.ColliderRadius, curPos, clickableLayerMask,
+            //         movementRayBelongsToLayerMask, direction, moveDelta, out var hitEntityFront))
+            // {
+            //     direction = GetLeftOrRight(direction, true);
+            //     if (ObstacleInDirection(ref physicsWorld, movableData.ColliderRadius, curPos, clickableLayerMask,
+            //             movementRayBelongsToLayerMask, direction, moveDelta,
+            //             out _))
+            //     {
+            //         direction = GetLeftOrRight(direction, false);
+            //         if (ObstacleInDirection(ref physicsWorld, movableData.ColliderRadius, curPos, clickableLayerMask,
+            //                 movementRayBelongsToLayerMask, direction, moveDelta,
+            //                 out _))
+            //         {
+            //             frontObstacleEntity = hitEntityFront;
+            //             // return false;
+            //         }
+            //         else
+            //         {
+            //             shouldRecalculate = true;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         shouldRecalculate = true;
+            //     }
+            // }
+            
+            var targetRotation = quaternion.LookRotationSafe(-direction, math.up());
+            transform.Rotation = math.slerp(transform.Rotation.value, targetRotation, deltaTime * rotationSpeed);
+            transform.Position += moveDelta * direction;
+            frontObstacleEntity = Entity.Null;
+            // Change the path to left and right
+            // if (shouldRecalculate) movableData.ForceCalculate = true;
+            
+            Debug.Log($"Should move to : {transform.Position}");
+            Debug.Log($"Move delta : {moveDelta}");
+            return true;
+        }
+
+        // [BurstCompile]
+        private static bool ObstacleInDirection(ref PhysicsWorldSingleton physicsWorld, float colliderRadius,
+            float3 curPos, uint clickableLayerMask,
+            uint movementRayBelongsToLayerMask, float3 direction, float3 castLength, out Entity entity)
+        {
+            var rayOrigin = curPos + direction * colliderRadius + new float3(0, 0.5f, 0);
+            var rayEnd = rayOrigin + direction * castLength;
+            var raycastInput = new RaycastInput
+            {
+                Start = rayOrigin,
+                End = rayEnd,
+                Filter = new CollisionFilter
+                {
+                    BelongsTo = movementRayBelongsToLayerMask,
+                    CollidesWith = clickableLayerMask,
+                    GroupIndex = 0
+                }
+            };
+            if (physicsWorld.PhysicsWorld.CollisionWorld.CastRay(raycastInput, out var raycastHit))
+            {
+                entity = physicsWorld.PhysicsWorld.Bodies[raycastHit.RigidBodyIndex].Entity;
+                Debug.Log($"Entity {entity.Index} ");
+                return true;
+            }
+            else
+            {
+                entity = Entity.Null;
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// This method calculates the min distance between pos and a rect with centerPos and size
+        /// </summary>
+        /// <param name="centerPos"></param>
+        /// <param name="size"></param>
+        /// <param name="pos"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float DistanceSqPointToRect(float2 centerPos, float2 size, float2 pos)
+        {
+            var halfSize = size * 0.5f;
+            var min = centerPos - halfSize;
+            var max = centerPos + halfSize;
+
+            // this clamp method is what you know in scalar, and also works in vector
+            var clampedPos = math.clamp(pos, min, max);
+            return math.distancesq(pos, clampedPos);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float3 GetLeftOrRight(float3 direction, bool isLeft)
+        {
+            return isLeft ? new float3(-direction.z, 0, direction.x) : new float3(direction.z, 0, -direction.x);
+        }
+    }
+}

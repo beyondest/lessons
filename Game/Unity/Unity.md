@@ -25,7 +25,7 @@
 
 7. - Q : Probuilder meshes warning: [Warning Edit] Renderer on GameObject "IndicatorEnemy" was not converted. The assigned mesh is null or no materials are assigned.
    - Q : [Error Edit] InvalidOperationException: No sharedMesh assigned to Unity.Physics.MeshCollider on IndicatorEnemy.
-   - A : When using probuilder meshes in prefab, you MUST export the probuilder object into prefab, and use that prefab.
+   - A : `Select object in sceneview, right click -> Probuilder -> Export`When using probuilder meshes in prefab, you MUST export the probuilder object into prefab, and use that prefab.
   
 8. - Q : No camera outline in scene view
    - A : Turn on gizmos
@@ -95,6 +95,7 @@
 ``Ctrl + U``  Undo History List View  
 
 ``G`` Probuilder 6 Toggle Edit mode shortcut
+``Shift + Drag move face`` Probuilder 6 extrude face shortcut
 
 
 
