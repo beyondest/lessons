@@ -1,267 +1,212 @@
+using System;
 using SparFlame.GamePlaySystem.General;
+using UnityEngine;
 using Unity.Entities;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Mathematics;
+using Unity.Burst;
+using Unity.Jobs;
 using Unity.Transforms;
-using System.Runtime.CompilerServices;
-
-// ReSharper disable UseIndexFromEndExpression
+using Unity.Collections;
+using UnityEngine.Experimental.AI;
 
 
 namespace SparFlame.GamePlaySystem.Movement
 {
+    
     [BurstCompile]
-    public partial struct MovementSystem : ISystem
+    [UpdateAfter(typeof(MovementSystem))]
+    [Obsolete("Obsolete")]
+    public partial struct NavAgentSystem : ISystem
     {
+        private NavMeshWorld _navMeshWorld;
         private BufferLookup<WaypointBuffer> _waypointLookup;
+        private NativeArray<Entity> _entities;
+        private NativeList<NavMeshQuery> _navMeshQueries;
+
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<NotPauseTag>();
-            state.RequireForUpdate<MovementConfig>();
+            state.RequireForUpdate<NavAgentSystemConfig>();
+            _navMeshWorld = NavMeshWorld.GetDefaultWorld();
             _waypointLookup = state.GetBufferLookup<WaypointBuffer>(true);
+            _navMeshQueries = new NativeList<NavMeshQuery>(Allocator.Persistent);
         }
-
+        
+        
+        // TODO Change to Parallel code
+        // TODO Support for dynamic spawn units
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var config = SystemAPI.GetSingleton<MovementConfig>();
-            _waypointLookup.Update(ref state);
+            var  config = SystemAPI.GetSingleton<NavAgentSystemConfig>();
 
-            // PathCalculated is set to true only if calculation is done successfully
-            new MoveJob
+            var entityQuery = SystemAPI.QueryBuilder()
+                .WithAll<NavAgentComponent>()
+                .WithAll<MovingStateTag>()
+                .WithAll<LocalTransform>().Build();
+            if(entityQuery.IsEmpty)return;
+            _entities = entityQuery.ToEntityArray(Allocator.TempJob);
+            var ecbs = new NativeArray<EntityCommandBuffer>(_entities.Length, Allocator.TempJob);
+            for (var i = 0; i < _entities.Length; i++)
             {
-                WayPointsLookup = _waypointLookup,
-                DeltaTime = SystemAPI.Time.DeltaTime,
-                WayPointDistanceSq = config.WayPointDistanceSq,
-                MarchExtent = config.MarchExtent,
-                RotationSpeed = config.RotationSpeed
-            }.ScheduleParallel();
-        }
-    }
-
-
-    /// <summary>
-    /// Move the movable entity to their target. According to the movement command type, will execute different logic
-    /// </summary>
-    [BurstCompile]
-    [WithAll(typeof(HaveTarget))]
-    public partial struct MoveJob : IJobEntity
-    {
-        [ReadOnly] public BufferLookup<WaypointBuffer> WayPointsLookup;
-        [ReadOnly] public float DeltaTime;
-        [ReadOnly] public float WayPointDistanceSq;
-        [ReadOnly] public float MarchExtent;
-        [ReadOnly] public float RotationSpeed;
-
-        private void Execute(ref MovableData movableData,
-            ref NavAgentComponent navAgent, ref LocalTransform transform,
-            Entity entity)
-        {
-            navAgent.TargetPosition = new float3(movableData.TargetCenterPos.x, 0f, movableData.TargetCenterPos.z);
-            var targetCenterPos2D = new float2(movableData.TargetCenterPos.x, movableData.TargetCenterPos.z);
-            var curPos2D = new float2(transform.Position.x, transform.Position.z);
-            var curPos = new float3(transform.Position.x, 0f, transform.Position.z);
-            var interactiveRangeSq = movableData.InteractiveRangeSq;
-            var shouldMove = false;
-            //navAgent.EnableCalculation = true;
-            // This line should always be false, cause agent has buffer 
-            if (!WayPointsLookup.TryGetBuffer(entity, out var waypointBuffer)) return;
-            
-            switch (movableData.MovementCommandType)
-            {
-                // If Interactive movement
-                case MovementCommandType.Interactive:
-                {
-                    navAgent.Extents = new float3
-                    {
-                        x = movableData.TargetColliderShapeXZ.x,
-                        y = 1f,
-                        z = movableData.TargetColliderShapeXZ.y
-                    };
-                    var curDisSqPointToRect =
-                        DistanceSqPointToRect(targetCenterPos2D, movableData.TargetColliderShapeXZ, curPos2D);
-                    // Current pos in Interactive range. This should be checked before the last waypoint,
-                    // cause interactive movement DO NOT NEED or SHOULD NOT reach the last waypoint
-                    if (curDisSqPointToRect < interactiveRangeSq)
-                    {
-                        movableData.MovementState = MovementState.MovementComplete;
-                        movableData.DetailInfo = DetailInfo.None;
-                        navAgent.EnableCalculation = false;
-                        navAgent.CalculationComplete = false;
-                        movableData.MovementCommandType = MovementCommandType.None;
-                    }
-                    // Current pos not in Interactive range
-                    else
-                    {
-                        // Enable Calculation
-                        navAgent.EnableCalculation = true;
-                        if (movableData.ForceCalculate)
-                        {
-                            navAgent.ForceCalculate = true;
-                            movableData.ForceCalculate = false;
-                        }
-                        // Calculation Complete
-                        if (navAgent.CalculationComplete)
-                        {
-                            // Calculate if target reachable
-                            var endPos2D = new float2(waypointBuffer[waypointBuffer.Length - 1].WayPoint.x,
-                                waypointBuffer[waypointBuffer.Length - 1].WayPoint.z);
-                            var endDisSqPointToRect = DistanceSqPointToRect(targetCenterPos2D,
-                                movableData.TargetColliderShapeXZ, endPos2D);
-                            movableData.DetailInfo = endDisSqPointToRect < interactiveRangeSq
-                                ? DetailInfo.Reachable
-                                : DetailInfo.NotReachable;
-                            // If reach the last waypoint. Not using the index because moving takes time,
-                            // Even if the index is the last one, the object may not reach the last waypoint yet
-                            if (math.distancesq(endPos2D, curPos2D) < WayPointDistanceSq)
-                            {
-                                movableData.MovementState = movableData.DetailInfo == DetailInfo.Reachable
-                                    ? MovementState.MovementComplete
-                                    : MovementState.MovementPartialComplete;
-                                navAgent.EnableCalculation = false;
-                                navAgent.CalculationComplete = false;
-                                movableData.MovementCommandType = MovementCommandType.None;
-                            }
-                            // Not reach the last waypoint. Try moving
-                            else
-                            {
-                                if (navAgent.CurrentWaypoint + 1 < waypointBuffer.Length && 
-                                    math.distancesq(waypointBuffer[navAgent.CurrentWaypoint].WayPoint, curPos) < WayPointDistanceSq)
-                                {
-                                    navAgent.CurrentWaypoint += 1;
-                                }
-
-                                movableData.MovementState = MovementState.IsMoving;
-                                shouldMove = true;
-                            }
-                        }
-                        // Calculation Not Complete
-                        else
-                        {
-                            movableData.MovementState = MovementState.NotMoving;
-                            movableData.DetailInfo = DetailInfo.CalculationNotComplete;
-                        }
-                    }
-
-                    break;
-                }
-                // If march movement. Target position should be void
-                case MovementCommandType.March:
-                {
-                    navAgent.Extents = new float3(MarchExtent, 1f, MarchExtent);
-                    // March already arrived
-                    if (math.distancesq(targetCenterPos2D, curPos2D) < WayPointDistanceSq)
-                    {
-                        movableData.MovementState = MovementState.MovementComplete;
-                        movableData.DetailInfo = DetailInfo.None;
-                        navAgent.EnableCalculation = false;
-                        navAgent.CalculationComplete = false;
-                        movableData.MovementCommandType = MovementCommandType.None;
-                    }
-                    // March not arrived yet
-                    else
-                    {
-                        // Enable Calculation
-                        navAgent.EnableCalculation = true;
-                        if (movableData.ForceCalculate)
-                        {
-                            navAgent.ForceCalculate = true;
-                            movableData.ForceCalculate = false;
-                        }
-                        // Calculation complete
-                        if (navAgent.CalculationComplete)
-                        {
-                            // Calculate if target reachable
-                            var endPos2D = new float2(waypointBuffer[waypointBuffer.Length - 1].WayPoint.x,
-                                waypointBuffer[waypointBuffer.Length - 1].WayPoint.z);
-                            var endDisToTarget = math.distancesq(targetCenterPos2D, endPos2D);
-                            movableData.DetailInfo = endDisToTarget < WayPointDistanceSq
-                                ? DetailInfo.Reachable
-                                : DetailInfo.NotReachable;
-                            // If reach the last waypoint. Not using the index because moving takes time,
-                            // Even if the index is the last one, the object may not reach the last waypoint yet
-                            if (math.distancesq(endPos2D, curPos2D) < WayPointDistanceSq)
-                            {
-                                movableData.MovementState = movableData.DetailInfo == DetailInfo.Reachable
-                                    ? MovementState.MovementComplete
-                                    : MovementState.MovementPartialComplete;
-                                navAgent.EnableCalculation = false;
-                                navAgent.CalculationComplete = false;
-                                movableData.MovementCommandType = MovementCommandType.None;
-                            }
-                            // Not reach the last waypoint. Try moving
-                            else
-                            {
-                                if (navAgent.CurrentWaypoint + 1 < waypointBuffer.Length &&
-                                    math.distancesq(waypointBuffer[navAgent.CurrentWaypoint].WayPoint, curPos) <
-                                    WayPointDistanceSq)
-                                {
-                                    navAgent.CurrentWaypoint += 1;
-                                }
-
-                                movableData.MovementState = MovementState.IsMoving;
-                                shouldMove = true;
-                            }
-                        }
-                        // Calculation Not Complete
-                        else
-                        {
-                            movableData.MovementState = MovementState.NotMoving;
-                            movableData.DetailInfo = DetailInfo.CalculationNotComplete;
-                        }
-                    }
-                    break;
-                }
-                // No command
-                case MovementCommandType.None:
-                {
-                    break;
-                }
-                default:
-                    return;
+                ecbs[i] = new EntityCommandBuffer(Allocator.TempJob);
             }
+            _waypointLookup.Update(ref state);
+            var jobHandles = new NativeArray<JobHandle>(_entities.Length, Allocator.TempJob);
+            var navAgents =
+                entityQuery.ToComponentDataArray<NavAgentComponent>(Allocator.TempJob);
+            var localTransforms =
+                entityQuery.ToComponentDataArray<LocalTransform>(Allocator.TempJob);
 
-            if (!shouldMove) return;
+            for (var i = 0; i < _entities.Length; i++)
+            {
+                // Only recalculate navMeshQueries when entity's navMeshQuery is not set yet
+                // This code must be executed before the enableCalculation check, or will throw index wrong
+                if (!navAgents[i].IsNavQuerySet)
+                {
+                    var navAgent = navAgents[i];
+                    _navMeshQueries.Add(new NavMeshQuery(_navMeshWorld, Allocator.Persistent, config.PathNodePoolSize));
+                    navAgent.IsNavQuerySet = true;
+                    navAgents[i] = navAgent;
+                }
+                
+                // Only calculate for the enable calculation agents
+                if(!navAgents[i].EnableCalculation)continue;
+                // Only recalculate the path once in an interval OR the target is updated
+                var curTime = SystemAPI.Time.ElapsedTime;
+                if (!(navAgents[i].ForceCalculate || navAgents[i].NextPathCalculateTime < curTime)) continue;
+                // Start calculate                
+                var calculatePathJob = new CalculatePathJob
+                {
+                    Entity = _entities[i],
+                    NavAgent = navAgents[i],
+                    FromPosition = new float3(localTransforms[i].Position.x, 0f, localTransforms[i].Position.z),
+                    ECB = ecbs[i],
+                    Query = _navMeshQueries[i],
+                    ElapsedTime = (float)SystemAPI.Time.ElapsedTime,
+                    Extents = navAgents[i].Extents,
+                    Iterations = config.MaxIterations,
+                    MaxPathSize = config.MaxPathSize
+                };
+                jobHandles[i] = calculatePathJob.Schedule();
+            }
             
-            // Move Target towards waypoint
-            var movePos = waypointBuffer[navAgent.CurrentWaypoint].WayPoint;
-            var direction = movePos - curPos;
-            // This line is crucial because math.normalize will return NAN sometimes without this line
-            if(math.length(direction) < 0.1f)return;
-            // var angle = math.degrees(math.atan2(direction.z, direction.x));
-            // transform.Rotation = math.slerp(
-            //     transform.Rotation,
-            //     quaternion.Euler(new float3(0, angle, 0)),
-            //     DeltaTime);
-            var targetRotation = quaternion.LookRotationSafe(-direction, math.up());
-            transform.Rotation = math.slerp(transform.Rotation.value, targetRotation, DeltaTime * RotationSpeed );
+            JobHandle.CompleteAll(jobHandles);
+            for (var i = 0; i < _entities.Length; i++)
+            {
+                ecbs[i].Playback(state.EntityManager);
+                ecbs[i].Dispose();
+            }
             
-            transform.Position +=
-                math.normalize(direction) * DeltaTime * movableData.MoveSpeed;
+            _entities.Dispose();
+            navAgents.Dispose();
+            localTransforms.Dispose();
+            jobHandles.Dispose();
+            ecbs.Dispose();
         }
 
-
-        /// <summary>
-        /// This method calculates the min distance between pos and a rect with centerPos and size
-        /// </summary>
-        /// <param name="centerPos"></param>
-        /// <param name="size"></param>
-        /// <param name="pos"></param>
-        /// <returns></returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static float DistanceSqPointToRect(float2 centerPos, float2 size, float2 pos)
+        [BurstCompile]
+        public void OnDestroy(ref SystemState state)
         {
-            var halfSize = size * 0.5f;
-            var min = centerPos - halfSize;
-            var max = centerPos + halfSize;
+            foreach (var query in _navMeshQueries)
+            {
+                query.Dispose();
+            }
+            _navMeshQueries.Dispose();
+        }
 
-            // this clamp method is what you know in scalar, and also works in vector
-            var clampedPos = math.clamp(pos, min, max);
-            return math.distancesq(pos, clampedPos);
+       
+
+        [BurstCompile]
+        private struct CalculatePathJob : IJob
+        {
+            public Entity Entity;
+            public NavAgentComponent NavAgent;
+            public EntityCommandBuffer ECB;
+            public NavMeshQuery Query;
+            
+            [ReadOnly] public float3 FromPosition;
+            [ReadOnly] public float3 Extents;
+            [ReadOnly] public float ElapsedTime;
+            [ReadOnly] public int MaxPathSize;
+            [ReadOnly] public int Iterations;
+
+            public void Execute()
+            {
+                NavAgent.NextPathCalculateTime = ElapsedTime + NavAgent.CalculateInterval;
+                NavAgent.CalculationComplete = false;
+                NavAgent.ForceCalculate = false;
+                ECB.SetComponent(Entity, NavAgent);
+                var toPosition = NavAgent.TargetPosition;
+
+                var fromLocation = Query.MapLocation(FromPosition, Extents, NavAgent.AgentId);
+                var toLocation = Query.MapLocation(toPosition, Extents, NavAgent.AgentId);
+                if (!Query.IsValid(fromLocation) || !Query.IsValid(toLocation)) return;
+                
+                var status = Query.BeginFindPath(fromLocation, toLocation);
+                
+                // Notice : If target is not reachable, and extents is also not reachable, it will return Failure this step
+                // The status only return one main status binding with a detailed status
+                // Main Status : InProgress, Success, Failure
+                if(status is not (PathQueryStatus.InProgress or PathQueryStatus.Success) )return;
+                status = Query.UpdateFindPath(Iterations, out _);
+                
+                if ((status & PathQueryStatus.Success) == 0) return;
+                
+                Query.EndFindPath(out var pathSize);
+
+                var result =
+                    new NativeArray<NavMeshLocation>(pathSize + 1, Allocator.Temp);
+                var straightPathFlag =
+                    new NativeArray<StraightPathFlags>(MaxPathSize, Allocator.Temp);
+                var vertexSide = new NativeArray<float>(MaxPathSize, Allocator.Temp);
+                var polygonIds =
+                    new NativeArray<PolygonId>(pathSize + 1, Allocator.Temp);
+                var straightPathCount = 0;
+                
+                Query.GetPathResult(polygonIds);
+
+                var returningStatus = PathUtils.FindStraightPath
+                (
+                    Query,
+                    FromPosition,
+                    toPosition,
+                    polygonIds,
+                    pathSize,
+                    ref result,
+                    ref straightPathFlag,
+                    ref vertexSide,
+                    ref straightPathCount,
+                    MaxPathSize
+                );
+
+                if (returningStatus == PathQueryStatus.Success)
+                {
+                    // waypointBuffer.Clear();
+                    ECB.SetBuffer<WaypointBuffer>(Entity);
+                    
+                    foreach (var location in result)
+                    {
+                        if (location.position != Vector3.zero)
+                        {
+                            ECB.AppendToBuffer(Entity, new WaypointBuffer
+                            {
+                                WayPoint = new float3(location.position.x, 0f, location.position.z),
+                            });
+                        }
+                    }
+
+                    NavAgent.CurrentWaypoint = 0;
+                    NavAgent.CalculationComplete = true;
+                    ECB.SetComponent(Entity, NavAgent);
+                }
+
+                straightPathFlag.Dispose();
+                polygonIds.Dispose();
+                vertexSide.Dispose();
+            }
         }
     }
 }

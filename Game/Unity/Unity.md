@@ -32,6 +32,13 @@
   
 9. - Q : Entity Manager need to be reasigned in update in monobehavior, or sometimes (I am not sure when exactly) it will be deallocated
 
+10. - Q : Unity ECS Physics collider event trigger will generate events of 2 objects that are active or passive collider, which causes same event counting twice
+        when using sight techniques, moreover, it will cause the enemy detects the ally when ally detects enemy, even they have different sight range
+    - A : Only when EntityA entity == self entity(which has a statefuleventtriggerbuffer), this event is considered valid
+
+11. - Q : IndexOutOfRangeException: Index -1 is out of range in container of '0' Length.
+    - A : This is usually by wrong system update sequence, something conflict. Check your system update sequence
+
         
 # Useful tips
 
