@@ -16,6 +16,9 @@
 6. **Clip Issue/Cannot see full object rendering in viewport/camera** 
    - A: Change settings in `View->Clip end->Increase distance until full object is visible`/`Camera->Clip start->Increase distance until full object is visible`
 
+7. In pose mode, cannot rotate a bone even if it has no constraints.
+   - A : You set an invalid quaternion to rotation value. w^2 + x^2 + y^2 + z^2 should be 1.0, otherwise it will not work.
+
 
 # Basic Settings
 

@@ -1,0 +1,1 @@
+FixedList cannot store entity prefab, I cannot figure out why. It just get wrong entity prefab.

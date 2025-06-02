@@ -39,7 +39,15 @@
 11. - Q : IndexOutOfRangeException: Index -1 is out of range in container of '0' Length.
     - A : This is usually by wrong system update sequence, something conflict. Check your system update sequence
 
+12. - Q : TLS Allocator ALLOC_TEMP_TLS, underlying allocator ALLOC_TEMP_MAIN has unfreed allocations, size 25600
+Internal: Stack allocator ALLOC_TEMP_MAIN has unfreed allocations, size 25600
+    - A : Answer : You can never use this.gameobject.setActive(true) in OnEnable() function, this will cause dead loop
         
+13. - Q : Unity Ecs Random generate numbers gathered in a small range in some state
+    - A : The seed is not right , some seed will generate numbers in a small range, try math.hash() to get a better seed.
+
+14. - Q : Transparent material overlaps with other transparent material causing wrong rendering effect only in game view
+    - A : Check if depth write is force enabled in both materials
 # Useful tips
 
 - Expand all chiled items:  
